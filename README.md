@@ -86,7 +86,9 @@ dotnet run
 dotnet watch run
 ```
 
-- Swagger UI: http://localhost:5000/swagger o https://localhost:7000/swagger
+- URL Base del Backend: http://localhost:5095 (o https://localhost:7103)
+- API Base URL: http://localhost:5095/api
+- Swagger UI: http://localhost:5095/swagger (o https://localhost:7103/swagger)
 
 ---
 
