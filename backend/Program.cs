@@ -1,10 +1,14 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Sande.Api.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Controladores
+// 1. Inyección de Repositorios
+builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+
+// 2. Controladores
 builder.Services.AddControllers();
 
 // 2. CORS (Permitir Angular en desarrollo)
