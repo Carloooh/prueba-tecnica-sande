@@ -1,6 +1,6 @@
 # Prueba Tecnica SANDE
 
-Proyecto construido con .NET Web API y Angular con Angular Material para resolver la prueba tecnica propuesta por SANDE S.A.
+Proyecto construido con .NET Web API y Angular con Angular Material para resolver la prueba tecnica propuesta por SANDE
 
 ---
 
