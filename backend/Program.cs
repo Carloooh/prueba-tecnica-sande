@@ -1,26 +1,18 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Sande.Api.Repositories;
+using Sande.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Inyección de Repositorios
+// Inyección de Dependencias
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IProductoService, ProductoService>();
 
-// 2. Controladores
+// Controladores
 builder.Services.AddControllers();
 
-// 2. CORS (Permitir Angular en desarrollo)
+// CORS para permitir peticiones desde el frontend en Angular
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngular", policy =>
-    {
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
@@ -29,26 +21,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 3. Autenticación JWT
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "ClaveFallbackSeguraDeAlMenos32Caracteres!";
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.RequireHttpsMetadata = false;
-        options.SaveToken = true;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ClockSkew = TimeSpan.Zero
-        };
-    });
-
-builder.Services.AddAuthorization();
-
-// 4. Swagger / OpenAPI
+// Swagger / OpenAPI para documentación y pruebas de la API
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -61,9 +34,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAll");
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.MapControllers();
 
