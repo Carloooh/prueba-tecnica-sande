@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -32,6 +32,7 @@ import { FiltrosConsulta, Marca, Proveedor } from '../../models/producto.model';
 })
 export class BarraFiltrosComponent implements OnInit {
   private productoService = inject(ProductoService);
+  private cdr = inject(ChangeDetectorRef);
 
   @Output() consultar = new EventEmitter<FiltrosConsulta>();
   @Output() guardar = new EventEmitter<void>();
@@ -54,7 +55,6 @@ export class BarraFiltrosComponent implements OnInit {
   situacionesSeleccionadas: string[] = [];
 
   ngOnInit() {
-    // 1. Cargar todas las marcas existentes al inicializar
     this.cargarTodasLasMarcas();
   }
 
@@ -64,6 +64,7 @@ export class BarraFiltrosComponent implements OnInit {
       next: (data) => {
         this.marcasDisponibles = data;
         this.filtrarMarcasLocales(this.marcaTexto);
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error al cargar marcas:', err)
     });
@@ -78,6 +79,7 @@ export class BarraFiltrosComponent implements OnInit {
         m.marca.toLowerCase().includes(q)
       );
     }
+    this.cdr.markForCheck();
   }
 
   onMarcaInput() {
@@ -90,12 +92,13 @@ export class BarraFiltrosComponent implements OnInit {
     const marcaElegida = event.option.value;
     this.marcaTexto = marcaElegida;
 
-    // Reseteamos el proveedor anterior para que elija uno de la nueva marca
+    // Reseteamos el proveedor anterior para forzar la elección del proveedor de la nueva marca
     this.proveedorTexto = '';
     this.idEntidadSeleccionada = undefined;
 
     // Cargamos los proveedores asociados a esa marca
     this.cargarProveedoresPorMarca(marcaElegida);
+    this.cdr.markForCheck();
   }
 
   // Carga proveedores para la marca seleccionada
@@ -103,6 +106,7 @@ export class BarraFiltrosComponent implements OnInit {
     this.productoService.getProveedores(query, marca).subscribe({
       next: (data) => {
         this.proveedoresFiltrados = data;
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error al cargar proveedores por marca:', err)
     });
@@ -119,6 +123,7 @@ export class BarraFiltrosComponent implements OnInit {
     const prov: Proveedor = event.option.value;
     this.proveedorTexto = prov.abreviacion;
     this.idEntidadSeleccionada = prov.idEntidad;
+    this.cdr.markForCheck();
 
     // Dispara automáticamente la consulta para listar de inmediato en la tabla
     this.ejecutarConsulta();

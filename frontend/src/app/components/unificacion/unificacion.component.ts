@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { BarraFiltrosComponent } from '../barra-filtros/barra-filtros.component';
 import { TablaUnificacionComponent } from '../tabla-unificacion/tabla-unificacion.component';
@@ -29,6 +29,7 @@ import { FiltrosConsulta, ProductoConsultaItem, UnificacionItem } from '../../mo
 export class UnificacionComponent {
   private productoService = inject(ProductoService);
   private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
   productos: ProductoConsultaItem[] = [];
   cargando: boolean = false;
@@ -38,6 +39,7 @@ export class UnificacionComponent {
   alConsultar(filtros: FiltrosConsulta) {
     this.filtrosActuales = filtros;
     this.cargando = true;
+    this.cdr.markForCheck();
 
     this.productoService.consultarProductos(
       filtros.idEntidad,
@@ -49,12 +51,15 @@ export class UnificacionComponent {
       next: (res) => {
         this.productos = res.items || [];
         this.cargando = false;
+        this.cdr.markForCheck();
+
         if (this.productos.length === 0) {
           this.snackBar.open('No se encontraron productos con los filtros seleccionados.', 'OK', { duration: 3000 });
         }
       },
       error: (err) => {
         this.cargando = false;
+        this.cdr.markForCheck();
         console.error('Error al consultar productos:', err);
         this.snackBar.open('Error al consultar datos. Verifica que el backend esté ejecutándose.', 'Cerrar', { duration: 4000 });
       }
@@ -79,14 +84,22 @@ export class UnificacionComponent {
     }));
 
     this.cargando = true;
+    this.cdr.markForCheck();
+
     this.productoService.unificar(payload).subscribe({
       next: (res) => {
-        this.snackBar.open(res.mensaje || 'Unificación completada con éxito.', 'OK', { duration: 4000 });
-        // Recargamos la grilla para refrescar los datos y reflejar los productos unificados
-        this.alConsultar(this.filtrosActuales);
+        // En lugar de volver a consultar a la BD por HTTP, removemos localmente
+        // las filas que acaban de ser unificadas de forma 100% instantánea y expedita
+        const idsUnificados = new Set(payload.map(u => u.idProductoOrigen));
+        this.productos = this.productos.filter(p => !idsUnificados.has(p.idProducto));
+        this.cargando = false;
+        this.cdr.markForCheck();
+
+        this.snackBar.open(res.mensaje || 'Unificación completada con éxito.', 'OK', { duration: 3000 });
       },
       error: (err) => {
         this.cargando = false;
+        this.cdr.markForCheck();
         console.error('Error al guardar unificaciones:', err);
         const errorMsg = err?.error?.message || 'Error al procesar la unificación.';
         this.snackBar.open(`Error: ${errorMsg}`, 'Cerrar', { duration: 5000 });

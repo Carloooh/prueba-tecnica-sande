@@ -53,7 +53,7 @@
   font-size: 12px;
 }
 
-/* Encabezados con flecha de orden/filtro */
+/* Encabezados con flecha interactiva de ordenamiento (MatSort) */
 th.mat-header-cell {
   background-color: #f1f5f9;
   color: #334155;
@@ -62,6 +62,7 @@ th.mat-header-cell {
   padding: 8px 12px;
   border-bottom: 2px solid #cbd5e1;
   white-space: nowrap;
+  user-select: none;
 }
 
 td.mat-cell {
@@ -90,7 +91,7 @@ td.mat-cell {
 .badge-situacion { background-color: #e6f4ea; color: #16a34a; padding: 2px 5px; border-radius: 4px; font-weight: 700; }
 
 /* Celda CODIGO N */
-.th-codigo-n { min-width: 240px; }
+.th-codigo-n { min-width: 190px; }
 .codigo-n-container { display: flex; flex-direction: column; gap: 4px; }
 .input-codigo-n { width: 100%; font-size: 12px; }
 .btn-lupa-celda {
@@ -104,14 +105,37 @@ td.mat-cell {
   width: 18px;
   height: 18px;
 }
-.destino-chip { 
-  color: #16a34a; 
-  font-size: 11px; 
-  font-weight: 600; 
-  white-space: nowrap; 
-  overflow: hidden; 
+
+/* Columna contigua derecha: DESTINO VALIDADO */
+.th-destino-validado { min-width: 250px; }
+.td-destino-validado { vertical-align: middle; }
+.destino-chip-validado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  max-width: 340px;
+}
+.icono-check-destino {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #16a34a;
+}
+.texto-destino {
+  white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 260px;
+}
+.destino-vacio {
+  color: #94a3b8;
+  font-size: 13px;
 }
 
 /* Estado vacío */

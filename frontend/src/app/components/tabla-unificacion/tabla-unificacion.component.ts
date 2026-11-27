@@ -1,7 +1,8 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, OnChanges, AfterViewInit, ViewChild, SimpleChanges, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -19,6 +20,7 @@ import { ProductoConsultaItem, ProductoPrincipal } from '../../models/producto.m
     CommonModule,
     FormsModule,
     MatTableModule,
+    MatSortModule,
     MatFormFieldModule,
     MatInputModule,
     MatAutocompleteModule,
@@ -30,16 +32,22 @@ import { ProductoConsultaItem, ProductoPrincipal } from '../../models/producto.m
   templateUrl: './tabla-unificacion.component.html',
   styleUrl: './tabla-unificacion.component.css'
 })
-export class TablaUnificacionComponent {
+export class TablaUnificacionComponent implements OnChanges, AfterViewInit {
   private productoService = inject(ProductoService);
+  private cdr = inject(ChangeDetectorRef);
 
   @Input() productos: ProductoConsultaItem[] = [];
   @Input() cargando: boolean = false;
 
+  @ViewChild(MatSort) sort!: MatSort;
+
+  // Fuente de datos con ordenamiento reactivo (MatSort)
+  dataSource = new MatTableDataSource<ProductoConsultaItem>([]);
+
   // Lista dinámica de opciones para el autocomplete de CODIGO N
   opcionesDestino: ProductoPrincipal[] = [];
 
-  // Columnas visibles de la grilla
+  // Columnas visibles de la grilla (incluyendo Columna derecha contigua: Destino Validado)
   columnasVisibles: string[] = [
     'seccion',
     'categoria',
@@ -51,8 +59,23 @@ export class TablaUnificacionComponent {
     'situacion',
     'fui',
     'marca',
-    'codigoN'
+    'codigoN',
+    'destinoValidado'
   ];
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['productos']) {
+      this.dataSource.data = this.productos || [];
+      if (this.sort) {
+        this.dataSource.sort = this.sort;
+      }
+      this.cdr.markForCheck();
+    }
+  }
+
+  ngAfterViewInit(): void {
+    this.dataSource.sort = this.sort;
+  }
 
   // "Presionando la lupa, se debe poder buscar los codigos existentes para esa marca y esa categoria, seleccionandolo."
   buscarDestinos(row: ProductoConsultaItem, textoBusqueda?: string) {
@@ -62,6 +85,7 @@ export class TablaUnificacionComponent {
     this.productoService.buscarPrincipales(q, row.idProducto, row.marca, row.categoria).subscribe({
       next: (data) => {
         this.opcionesDestino = data;
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error al buscar productos principales por marca/categoría:', err)
     });
@@ -72,6 +96,7 @@ export class TablaUnificacionComponent {
     row.codigoN = opcion.codigo;
     row.idProductoDestino = opcion.idProducto;
     row.productoDestinoNombre = `${opcion.codigo} - ${opcion.producto} (${opcion.proveedor})`;
+    this.cdr.markForCheck();
   }
 
   // Si el usuario edita o borra el texto manualmente
@@ -80,6 +105,7 @@ export class TablaUnificacionComponent {
       row.idProductoDestino = null;
       row.productoDestinoNombre = null;
     }
+    this.cdr.markForCheck();
   }
 
   // Cuenta cuántos productos tienen destino asignado listo para unificar
