@@ -36,6 +36,8 @@ export class BarraFiltrosComponent implements OnInit {
 
   @Output() consultar = new EventEmitter<FiltrosConsulta>();
   @Output() guardar = new EventEmitter<void>();
+  @Output() exportar = new EventEmitter<void>();
+  @Output() archivoImportado = new EventEmitter<File>();
 
   // Filtros de texto seleccionados
   marcaTexto = '';
@@ -148,5 +150,19 @@ export class BarraFiltrosComponent implements OnInit {
   // Emite el guardado de unificaciones (Diskette)
   ejecutarGuardar() {
     this.guardar.emit();
+  }
+
+  // Emite la exportación a Excel
+  ejecutarExportar() {
+    this.exportar.emit();
+  }
+
+  // Al seleccionar un archivo Excel para importar
+  onFileChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.archivoImportado.emit(input.files[0]);
+      input.value = ''; // Permite volver a subir el mismo archivo si se edita
+    }
   }
 }

@@ -20,14 +20,7 @@
 
   <!-- 2. Botón [S] y Buscador de Supplier (Proveedores para la marca seleccionada) -->
   <div class="proveedor-container">
-    <button
-      type="button"
-      class="btn-s"
-      (click)="toggleProveedor()"
-      title="Selector de Proveedor (Supplier)"
-    >
-      S
-    </button>
+    <button type="button" class="btn-s" (click)="toggleProveedor()" title="Selector de Proveedor (Supplier)">S</button>
     <mat-form-field
       appearance="outline"
       subscriptSizing="dynamic"
@@ -41,7 +34,10 @@
         [placeholder]="marcaTexto ? 'Proveedor para ' + marcaTexto : 'Proveedor'"
         [matAutocomplete]="autoProveedor"
       />
-      <mat-autocomplete #autoProveedor="matAutocomplete" (optionSelected)="onProveedorSeleccionado($event)">
+      <mat-autocomplete
+        #autoProveedor="matAutocomplete"
+        (optionSelected)="onProveedorSeleccionado($event)"
+      >
         @for (prov of proveedoresFiltrados; track prov.idEntidad) {
           <mat-option [value]="prov">
             <strong>{{ prov.abreviacion }}</strong> - {{ prov.razonSocial }}
@@ -97,23 +93,23 @@
     <mat-button-toggle value="I">I</mat-button-toggle>
   </mat-button-toggle-group>
 
-  <!-- 6. Botones de Acción (Lupa y Diskette) -->
+  <!-- 6. Botones de Acción (Lupa, Diskette, Exportar Excel e Importar Excel) -->
   <div class="acciones-container">
-    <button
-      mat-icon-button
-      class="btn-lupa"
-      (click)="ejecutarConsulta()"
-      matTooltip="Consultar (Lupa)"
-    >
+    <button mat-icon-button class="btn-lupa" (click)="ejecutarConsulta()" matTooltip="Consultar (Lupa)">
       <mat-icon>search</mat-icon>
     </button>
-    <button
-      mat-icon-button
-      class="btn-guardar"
-      (click)="ejecutarGuardar()"
-      matTooltip="Guardar unificaciones (Diskette)"
-    >
+    <button mat-icon-button class="btn-guardar" (click)="ejecutarGuardar()" matTooltip="Guardar unificaciones (Diskette)">
       <mat-icon>save</mat-icon>
     </button>
+    
+    <span class="separador-acciones"></span>
+
+    <button mat-icon-button class="btn-exportar" (click)="ejecutarExportar()" matTooltip="Exportar productos filtrados a Excel">
+      <mat-icon>file_download</mat-icon>
+    </button>
+    <button mat-icon-button class="btn-importar" (click)="fileInput.click()" matTooltip="Importar modificaciones masivas desde Excel">
+      <mat-icon>file_upload</mat-icon>
+    </button>
+    <input #fileInput type="file" (change)="onFileChange($event)" accept=".xlsx, .xls, .csv" style="display: none;" />
   </div>
 </div>
