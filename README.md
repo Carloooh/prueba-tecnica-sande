@@ -174,3 +174,4 @@ En el backend el flujo es:
 4. Listar automáticamente los productos con distinto código y proveedor para listarse y que no tengan que buscarlos en la tabla manualmente para corregirlos
 5. Mejoras de interfaz, por ej. que sea más responsiva y con colores no tan planos.
 6. En el campo Codigo N, poder buscar por nombre y no solo código para poder filtrar más e identificar más rápido el código correspondiente dentro de la categoría en el buscador.
+7. Opción que automáticamente identifique los productos que requieren ser unificados (con IA o algo) y previa autorización humana se hagan los cambios, para no tener que recurrir al excel
