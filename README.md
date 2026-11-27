@@ -27,12 +27,15 @@ El backend fue disenado siguiendo una arquitectura limpia y desacoplada en 4 cap
 
 ### 2. Interfaz Web en Frontend (Angular + Angular Material)
 
-- Barra superior con selectores autocompletables para Marca y Proveedor.
+- Barra superior con selectores autocompletables para Marca y Proveedor en cascada.
 - Filtros combinados de minimo de clientes (`#C`), tipo de producto (`G, P, R, S`) y situacion (`#, A, C, D, I`).
 - Boton Lupa para ejecucion de consulta con totalizador de registros encontrados.
-- Grilla con indicadores de clasificacion, estado, clientes y fecha de ultimo ingreso (FUI).
-- Columna editable con autocomplete para asignar `CODIGO N` y visualizacion del destino validado.
-- Boton Diskette para guardado transaccional y recarga automatica de la grilla.
+- Grilla con indicadores de clasificacion, estado, clientes, fecha de ultimo ingreso (FUI) y ordenamiento interactivo por columnas (`MatSort`).
+- Columna editable con autocomplete y lupa integrada para asignar `CODIGO N` buscando códigos equivalentes por marca y categoría.
+- Columna contigua derecha `DESTINO VALIDADO` que despliega el producto principal y proveedor destino verificado.
+- Boton Diskette para guardado transaccional y refresco expedito en memoria.
+- **Exportación a Excel (.xlsx):** Exporta los registros filtrados en pantalla listos para revisión o modificación masiva.
+- **Importación desde Excel (.xlsx):** Carga masiva de códigos modificados desde Excel, autovalidando los destinos y actualizando la grilla antes de guardar.
 
 ---
 
@@ -147,19 +150,22 @@ Se creó un procedimiento almacenado para asegurar la ejecución atómica y efic
 - **Procedimiento Almacenado Optimizado:** Centralizacion de las 4 operaciones de unificacion con control de errores `TRY...CATCH`, `XACT_ABORT` y `ROLLBACK` automatico.
 - **Validacion de Auto-agrupacion:** Bloqueo preventivo en frontend y backend para impedir que un producto se unifique consigo mismo.
 - **Feedback Visual Inmediato:** Notificaciones claras al completar unificaciones o ante validaciones pendientes.
-- **[Tu funcionalidad extra]:** Espacio para documentar la funcion adicional que desarrolles durante la prueba.
+- **Exportación e Importación Masiva en Excel (.xlsx):** Permite descargar la grilla filtrada para trabajar modificaciones masivas en Excel y reimportarlas al formulario, validando los destinos automáticamente antes de persistir los cambios.
+- **Detección Reactiva Zoneless y Refresco Inmediato:** Experiencia de usuario fluida sin recargas lentas ni bloqueos de interfaz al unificar productos.
 
 ---
 
 ## Sobre el Desarrollo
 
-Se desarrolló el sistema con backend y frontend separados pero subidos en monorepo a GitHub. Para el backend se utilizó C# con arquitectura limpia de 4 capas y para el frontend se utilizó TypeScript con Angular y Angular Material. Para el desarrollo, me apoyé con documentación oficial de .NET y Angular, e IA para corrección de errores, automatizaciones, mejora en la robustez del código backend principalmente y para testing. En el frontend, me tomé la libertad de darle un estilo propio, pero siguiendo la estructura y componentes que solicitan.
+Se desarrolló el sistema con backend y frontend separados pero subidos en monorepo a GitHub. Para el backend se utilizó C# con arquitectura limpia de 4 capas y para el frontend se utilizó TypeScript con Angular y Angular Material. Para el desarrollo, me apoyé con documentación oficial de .NET y Angular, e IA para corrección de errores, automatizaciones, mejora en la robustez del código backend principalmente y para testing. En el frontend, me tomé la libertad de darle un estilo propio, pero siguiendo la estructura y componentes que solicitan. Por ejemplo, el buscador de la barra de filtros lo puse para filtrar en caso de que lso filtros no busquen automáticamente por algún fallo, y puse el buscador de código dentro de cada fila para que quede más cómodo de utilizar. Añadí la columna Destino Validado a modo de previsualizar que el código seleccionado sea el que corresponde.
 
 El flujo del proyecto sería:
 
 1.  Interacción con las vistas desde el frontend
 2.  Las vistas consumen los endpoints del backend
 3.  Backend devuelve la respuesta correspondiente al frontend
+
+4.  El Excel se puede exportar con los filtros correspondientes y al importarlo se ven los datos en la columna Destino Validado para comprobar los cambios antes de guardarlos
 
 En el backend el flujo es:
 
@@ -171,3 +177,10 @@ En el backend el flujo es:
 ---
 
 ## Mejoras a Futuro
+
+1. Añadir pruebas unitarias y de integración automatizadas
+2. Implementar logs
+3. Restricción de acceso a la vista y backend mediante sesión de usuario, permisos y token
+4. Listar automáticamente los productos con distinto código y proveedor para listarse y que no tengan que buscarlos en la tabla manualmente para corregirlos
+5. Mejoras de interfaz, por ej. que sea más responsiva y con colores no tan planos.
+6. En el campo Codigo N, poder buscar por nombre y no solo código para poder filtrar más e identificar más rápido el código correspondiente dentro de la categoría en el buscador.
