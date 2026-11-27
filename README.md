@@ -48,7 +48,7 @@ git clone https://github.com/Carloooh/prueba-tecnica-sande.git
 cd prueba-tecnica-sande
 ```
 
-El proyecto se puede levantar de dos formas (ambas exponen los mismos puertos: Frontend en `http://localhost:4200` y Backend/Swagger en `http://localhost:5095`):
+El proyecto se puede levantar de dos formas (ambas requieren configurar manualmente la cadena de conexión a la bbdd y exponen los mismos puertos: Frontend en `http://localhost:4200` y Backend/Swagger en `http://localhost:5095`):
 
 ---
 
@@ -56,7 +56,7 @@ El proyecto se puede levantar de dos formas (ambas exponen los mismos puertos: F
 
 Requisito: tener **Docker Desktop** (o Docker Engine + Docker Compose) en ejecucion.
 
-1. Crea el archivo `.env` en la raiz del proyecto a partir de `.env.example` y colocar la cadena de conexion en `DB_CONNECTION_STRING`:
+1. Crea el archivo `.env` en la raiz del proyecto a partir de `.env.example` y luego manualmente hay que colocar la cadena de conexion a la base de datos en `DB_CONNECTION_STRING`:
 
 ```bash
 cp .env.example .env
@@ -146,6 +146,18 @@ ng serve
 
 ---
 
+### Pruebas Unitarias (Backend)
+
+El backend cuenta con pruebas unitarias en `tests/Sande.Api.Tests` (xUnit) que utilizan datos de prueba simulados en memoria (mocks/fakes), por lo que **no se conectan ni modifican la base de datos real**.
+
+Para ejecutarlas desde la raíz del proyecto:
+
+```bash
+dotnet test tests/Sande.Api.Tests
+```
+
+---
+
 ## Procedimientos Almacenados y Base de Datos
 
 Para resolver la unificación creé el procedimiento almacenado `[dbo].[sp_Unificar_Producto]`. La idea principal fue no hacer múltiples consultas sueltas desde el backend ni arriesgarse a dejar datos a medias si algo fallaba entre medio, así que dejé las 4 operaciones obligatorias del negocio encapsuladas dentro de una sola transacción atómica.
@@ -181,6 +193,8 @@ También incluí un botón para ejecutar el procedimiento almacenado para reinic
 - **Backend:** `backend/Controllers/ProductosController.cs` (`ResetDatosPrueba`), `backend/Services/ProductoService.cs` (`ResetDatosPruebaAsync`) y `backend/Repositories/ProductoRepository.cs` (`ResetDatosPruebaAsync`).
 - **Frontend:** `frontend/src/app/services/producto.service.ts` (`resetDatosPrueba`), `frontend/src/app/components/barra-filtros/barra-filtros.component.html`, `.ts` y `.css` (botón `.btn-reiniciar`, `@Output() reiniciar` y `ejecutarReinicio`), y `frontend/src/app/components/unificacion/unificacion.component.ts` (`ConfirmarResetDialogComponent`, `(reiniciar)="alReiniciar()"` y `alReiniciar`).
 
+También implementé pruebas unitarias en el backend (`tests/Sande.Api.Tests`) para validar la lógica de negocio del servicio y los controladores utilizando datos de prueba simulados en memoria (mocks/fakes), sin tocar ni modificar la base de datos real; se pueden probar directamente ejecutando `dotnet test tests/Sande.Api.Tests`.
+
 El flujo del proyecto sería:
 
 1.  Interacción con las vistas desde el frontend
@@ -200,7 +214,7 @@ En el backend el flujo es:
 
 ## Mejoras a Futuro
 
-1. Añadir pruebas unitarias y de integración automatizadas
+1. Añadir pruebas de integración automatizadas contra una base de datos aislada y pruebas E2E en frontend
 2. Implementar logs
 3. Restricción de acceso a la vista y backend mediante sesión de usuario, permisos y token
 4. Listar automáticamente los productos con distinto código y proveedor para listarse y que no tengan que buscarlos en la tabla manualmente para corregirlos
