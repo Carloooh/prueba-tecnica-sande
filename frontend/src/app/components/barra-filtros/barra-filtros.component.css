@@ -67,6 +67,16 @@
 }
 
 /* Botones de acción */
-.acciones-container { margin-left: auto; display: flex; gap: 4px; }
+.acciones-container { margin-left: auto; display: flex; align-items: center; gap: 4px; }
 .btn-lupa { color: #1976d2; }
 .btn-guardar { color: #16a34a; }
+
+.separador-acciones {
+  width: 1px;
+  height: 24px;
+  background-color: #cbd5e1;
+  margin: 0 4px;
+}
+
+.btn-exportar { color: #0284c7; }
+.btn-importar { color: #8b5cf6; }
