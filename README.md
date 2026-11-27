@@ -1,6 +1,6 @@
 # Prueba Tecnica SANDE
 
-Proyecto fullstack desarrollado con **.NET 8 Web API** y **Angular 19+ (Angular Material)** para resolver la prueba tecnica de Unificacion de Productos Duplicados, Prioridad de Proveedores y Traspaso de Stock propuesta por **SANDE S.A.**
+Proyecto fullstack desarrollado con **.NET 8 Web API** y **Angular 19+ (Angular Material)** para resolver la prueba tecnica propuesta por **SANDE** para la Unificacion de Productos Duplicados, Prioridad de Proveedores y Traspaso de Stock
 
 ---
 
