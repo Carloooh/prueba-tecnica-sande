@@ -1,0 +1,72 @@
+.barra-filtros-card {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: #ffffff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 12px;
+}
+
+/* Anchos de campos de entrada */
+.campo-marca { width: 150px; }
+.campo-proveedor { width: 190px; }
+.campo-clientes { width: 70px; }
+
+/* Botón S */
+.proveedor-container { display: flex; align-items: center; gap: 4px; }
+.btn-s {
+  width: 34px;
+  height: 36px;
+  background-color: #0f172a;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Control #C */
+.clientes-container { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; }
+
+/* Toggles base */
+.toggle-grupo {
+  border-radius: 6px;
+  overflow: hidden;
+  height: 36px;
+  border: 1px solid #cbd5e1;
+}
+
+.toggle-grupo mat-button-toggle {
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 30px;
+  background-color: #f8fafc;
+  color: #64748b;
+}
+
+/* Toggle GPRS: Cuando se activa cambia a AZUL nítido */
+.toggle-tipo ::ng-deep .mat-button-toggle-checked button {
+  background-color: #1976d2 !important;
+  color: #ffffff !important;
+}
+.toggle-tipo ::ng-deep .mat-button-toggle-checked .mat-button-toggle-label-content {
+  color: #ffffff !important;
+}
+
+/* Toggle #ACDI: Cuando se activa cambia a VERDE nítido */
+.toggle-situacion ::ng-deep .mat-button-toggle-checked button {
+  background-color: #16a34a !important;
+  color: #ffffff !important;
+}
+.toggle-situacion ::ng-deep .mat-button-toggle-checked .mat-button-toggle-label-content {
+  color: #ffffff !important;
+}
+
+/* Botones de acción */
+.acciones-container { margin-left: auto; display: flex; gap: 4px; }
+.btn-lupa { color: #1976d2; }
+.btn-guardar { color: #16a34a; }

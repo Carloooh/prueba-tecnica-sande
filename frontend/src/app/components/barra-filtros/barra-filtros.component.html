@@ -1,0 +1,90 @@
+<div class="barra-filtros-card">
+  <!-- 1. Input Marca -->
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="input-compacto campo-marca">
+    <input
+      matInput
+      [(ngModel)]="marcaSeleccionada"
+      placeholder="Marca"
+      [matAutocomplete]="autoMarca"
+    />
+    <mat-autocomplete #autoMarca="matAutocomplete">
+      <mat-option value="ENERPAC">ENERPAC</mat-option>
+      <mat-option value="SIMPLEX">SIMPLEX</mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+
+  <!-- 2. Botón [S] y Buscador de Proveedor -->
+  <div class="proveedor-container">
+    <button type="button" class="btn-s" title="Selector de Proveedor (Supplier)">S</button>
+    <mat-form-field
+      appearance="outline"
+      subscriptSizing="dynamic"
+      class="input-compacto campo-proveedor"
+    >
+      <input
+        matInput
+        [(ngModel)]="proveedorSeleccionado"
+        placeholder="Proveedor"
+        [matAutocomplete]="autoProveedor"
+      />
+      <mat-autocomplete #autoProveedor="matAutocomplete">
+        <mat-option value="D-OTERO D">D-OTERO D</mat-option>
+        <mat-option value="TRC ASTUDILLO-J">TRC ASTUDILLO-J</mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  </div>
+
+  <!-- 3. Selector de Clientes (#C) -->
+  <div class="clientes-container">
+    <span class="etiqueta-control">#C</span>
+    <mat-form-field
+      appearance="outline"
+      subscriptSizing="dynamic"
+      class="input-compacto campo-clientes"
+    >
+      <mat-select [(ngModel)]="minClientes">
+        <mat-option [value]="0">0</mat-option>
+        <mat-option [value]="1">1</mat-option>
+        <mat-option [value]="2">2</mat-option>
+        <mat-option [value]="5">5</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- 4. Multi-toggle Tipo (G, P, R, S) -->
+  <mat-button-toggle-group
+    multiple
+    [(ngModel)]="tiposSeleccionados"
+    class="toggle-grupo toggle-tipo"
+    aria-label="Filtro Tipo"
+  >
+    <mat-button-toggle value="G">G</mat-button-toggle>
+    <mat-button-toggle value="P">P</mat-button-toggle>
+    <mat-button-toggle value="R">R</mat-button-toggle>
+    <mat-button-toggle value="S">S</mat-button-toggle>
+  </mat-button-toggle-group>
+
+  <!-- 5. Multi-toggle Situación (#, A, C, D, I) -->
+  <mat-button-toggle-group
+    multiple
+    [(ngModel)]="situacionesSeleccionadas"
+    class="toggle-grupo toggle-situacion"
+    aria-label="Filtro Situación"
+  >
+    <mat-button-toggle value="#">#</mat-button-toggle>
+    <mat-button-toggle value="A">A</mat-button-toggle>
+    <mat-button-toggle value="C">C</mat-button-toggle>
+    <mat-button-toggle value="D">D</mat-button-toggle>
+    <mat-button-toggle value="I">I</mat-button-toggle>
+  </mat-button-toggle-group>
+
+  <!-- 6. Botones de Acción (Lupa y Diskette) -->
+  <div class="acciones-container">
+    <button mat-icon-button class="btn-lupa" matTooltip="Consultar (Lupa)">
+      <mat-icon>search</mat-icon>
+    </button>
+    <button mat-icon-button class="btn-guardar" matTooltip="Guardar unificaciones (Diskette)">
+      <mat-icon>save</mat-icon>
+    </button>
+  </div>
+</div>

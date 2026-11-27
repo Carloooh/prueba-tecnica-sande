@@ -1,0 +1,110 @@
+<div class="tabla-card">
+  <!-- Totalizador de filas (arriba a la izquierda) -->
+  <div class="tabla-header-info">
+    <span class="totalizador-badge">Total registros: {{ productos.length }}</span>
+  </div>
+
+  <div class="tabla-scroll">
+    <table mat-table [dataSource]="productos" class="tabla-datos">
+      
+      <!-- 1. SECCIÓN -->
+      <ng-container matColumnDef="seccion">
+        <th mat-header-cell *matHeaderCellDef>SECCIÓN ▾</th>
+        <td mat-cell *matCellDef="let row">{{ row.seccion }}</td>
+      </ng-container>
+
+      <!-- 2. CATEGORÍA -->
+      <ng-container matColumnDef="categoria">
+        <th mat-header-cell *matHeaderCellDef>CATEGORÍA ▾</th>
+        <td mat-cell *matCellDef="let row">{{ row.categoria }}</td>
+      </ng-container>
+
+      <!-- 3. CÓDIGO (en azul institucional) -->
+      <ng-container matColumnDef="codigo">
+        <th mat-header-cell *matHeaderCellDef class="th-codigo">CÓDIGO ▾</th>
+        <td mat-cell *matCellDef="let row" class="td-codigo">
+          <span class="codigo-absorber">{{ row.codigo }}</span>
+        </td>
+      </ng-container>
+
+      <!-- 4. CODE (código proveedor) -->
+      <ng-container matColumnDef="code">
+        <th mat-header-cell *matHeaderCellDef>CODE ▾</th>
+        <td mat-cell *matCellDef="let row">{{ row.code }}</td>
+      </ng-container>
+
+      <!-- 5. PRODUCTO -->
+      <ng-container matColumnDef="producto">
+        <th mat-header-cell *matHeaderCellDef class="th-producto">PRODUCTO ▾</th>
+        <td mat-cell *matCellDef="let row" class="td-producto">{{ row.producto }}</td>
+      </ng-container>
+
+      <!-- 6. # (N° Clientes) -->
+      <ng-container matColumnDef="nClientes">
+        <th mat-header-cell *matHeaderCellDef class="th-centro">#</th>
+        <td mat-cell *matCellDef="let row" class="th-centro">{{ row.nClientes }}</td>
+      </ng-container>
+
+      <!-- 7. TIPO (T) -->
+      <ng-container matColumnDef="tipo">
+        <th mat-header-cell *matHeaderCellDef class="th-centro">T ▾</th>
+        <td mat-cell *matCellDef="let row" class="th-centro">
+          <span class="badge-tipo">{{ row.tipo }}</span>
+        </td>
+      </ng-container>
+
+      <!-- 8. SITUACIÓN (S) -->
+      <ng-container matColumnDef="situacion">
+        <th mat-header-cell *matHeaderCellDef class="th-centro">S ▾</th>
+        <td mat-cell *matCellDef="let row" class="th-centro">
+          <span class="badge-situacion">{{ row.situacion }}</span>
+        </td>
+      </ng-container>
+
+      <!-- 9. FUI -->
+      <ng-container matColumnDef="fui">
+        <th mat-header-cell *matHeaderCellDef class="th-centro">FUI ▾</th>
+        <td mat-cell *matCellDef="let row" class="th-centro">{{ row.fui }}</td>
+      </ng-container>
+
+      <!-- 10. MARCA -->
+      <ng-container matColumnDef="marca">
+        <th mat-header-cell *matHeaderCellDef>MARCA ▾</th>
+        <td mat-cell *matCellDef="let row">{{ row.marca }}</td>
+      </ng-container>
+
+      <!-- 11. CÓDIGO N (Editable con Autocomplete) -->
+      <ng-container matColumnDef="codigoN">
+        <th mat-header-cell *matHeaderCellDef class="th-codigo-n">CODIGO N</th>
+        <td mat-cell *matCellDef="let row" class="td-codigo-n">
+          <div class="codigo-n-container">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="input-codigo-n">
+              <input 
+                matInput 
+                [(ngModel)]="row.codigoN" 
+                placeholder="Ej. RC506" 
+                [matAutocomplete]="autoN" 
+              />
+              <mat-autocomplete #autoN="matAutocomplete" (optionSelected)="seleccionarDestino(row, $event.option.value)">
+                @for (opcion of opcionesPrincipalesMock; track opcion.codigo) {
+                  <mat-option [value]="opcion">
+                    <strong>{{ opcion.codigo }}</strong> - {{ opcion.descripcion }}
+                  </mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+
+            @if (row.productoDestinoNombre) {
+              <div class="destino-chip" [title]="row.productoDestinoNombre">
+                ✓ {{ row.productoDestinoNombre }}
+              </div>
+            }
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columnasVisibles"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnasVisibles;" class="fila-producto"></tr>
+    </table>
+  </div>
+</div>

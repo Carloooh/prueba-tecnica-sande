@@ -7,7 +7,7 @@ import { TablaUnificacionComponent } from '../tabla-unificacion/tabla-unificacio
   standalone: true,
   imports: [BarraFiltrosComponent, TablaUnificacionComponent],
   template: `
-    <div style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+    <div style="width: 100%; padding: 12px 16px; box-sizing: border-box;">
       <app-barra-filtros />
       <app-tabla-unificacion />
     </div>
