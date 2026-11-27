@@ -19,16 +19,19 @@ export class ProductoService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
-  // Selector Supplier [S]
-  getProveedores(q?: string): Observable<Proveedor[]> {
+  // Selector Supplier [S]: consulta proveedores, filtrados opcionalmente por marca
+  getProveedores(q?: string, marca?: string): Observable<Proveedor[]> {
     let params = new HttpParams();
     if (q && q.trim()) {
       params = params.set('q', q.trim());
     }
+    if (marca && marca.trim()) {
+      params = params.set('marca', marca.trim());
+    }
     return this.http.get<Proveedor[]>(`${this.apiUrl}/proveedores`, { params });
   }
 
-  // Buscador de Marca
+  // Buscador de Marca: carga todas las marcas disponibles o filtra por texto / proveedor
   getMarcas(q?: string, idEntidad?: number): Observable<Marca[]> {
     let params = new HttpParams();
     if (q && q.trim()) {
@@ -40,7 +43,7 @@ export class ProductoService {
     return this.http.get<Marca[]>(`${this.apiUrl}/marcas`, { params });
   }
 
-  // Acción Lupa: consulta la grilla con los filtros activos
+  // Acción Lupa / Consulta automática: consulta la grilla con los filtros activos
   consultarProductos(
     idEntidad?: number,
     marca?: string,
@@ -69,14 +72,25 @@ export class ProductoService {
     return this.http.get<ProductosConsultaResponse>(`${this.apiUrl}/productos/consulta`, { params });
   }
 
-  // Autocomplete para la celda CODIGO N (excluye el id de la fila actual)
-  buscarPrincipales(q?: string, excluirId?: number): Observable<ProductoPrincipal[]> {
+  // Autocomplete celda CODIGO N: busca productos principales activos para esa marca y categoría
+  buscarPrincipales(
+    q?: string, 
+    excluirId?: number, 
+    marca?: string, 
+    categoria?: string
+  ): Observable<ProductoPrincipal[]> {
     let params = new HttpParams();
     if (q && q.trim()) {
       params = params.set('q', q.trim());
     }
     if (excluirId && excluirId > 0) {
       params = params.set('excluirId', excluirId.toString());
+    }
+    if (marca && marca.trim()) {
+      params = params.set('marca', marca.trim());
+    }
+    if (categoria && categoria.trim()) {
+      params = params.set('categoria', categoria.trim());
     }
     return this.http.get<ProductoPrincipal[]>(`${this.apiUrl}/productos/principales/buscar`, { params });
   }

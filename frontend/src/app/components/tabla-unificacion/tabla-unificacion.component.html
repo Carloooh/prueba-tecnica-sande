@@ -1,12 +1,21 @@
 <div class="tabla-card">
-  <!-- Totalizador de filas (arriba a la izquierda) -->
+  <!-- Barra superior con totalizador de registros -->
   <div class="tabla-header-info">
     <span class="totalizador-badge">Total registros: {{ productos.length }}</span>
+    @if (contarPendientes() > 0) {
+      <span class="badge-pendientes">
+        <mat-icon class="icono-pendientes">save</mat-icon>
+        {{ contarPendientes() }} listos para unificar
+      </span>
+    }
   </div>
+
+  @if (cargando) {
+    <mat-progress-bar mode="indeterminate" class="tabla-loader"></mat-progress-bar>
+  }
 
   <div class="tabla-scroll">
     <table mat-table [dataSource]="productos" class="tabla-datos">
-      
       <!-- 1. SECCIÓN -->
       <ng-container matColumnDef="seccion">
         <th mat-header-cell *matHeaderCellDef>SECCIÓN ▾</th>
@@ -27,7 +36,7 @@
         </td>
       </ng-container>
 
-      <!-- 4. CODE (código proveedor) -->
+      <!-- 4. CODE (código de proveedor) -->
       <ng-container matColumnDef="code">
         <th mat-header-cell *matHeaderCellDef>CODE ▾</th>
         <td mat-cell *matCellDef="let row">{{ row.code }}</td>
@@ -36,7 +45,9 @@
       <!-- 5. PRODUCTO -->
       <ng-container matColumnDef="producto">
         <th mat-header-cell *matHeaderCellDef class="th-producto">PRODUCTO ▾</th>
-        <td mat-cell *matCellDef="let row" class="td-producto">{{ row.producto }}</td>
+        <td mat-cell *matCellDef="let row" class="td-producto" [title]="row.producto">
+          {{ row.producto }}
+        </td>
       </ng-container>
 
       <!-- 6. # (N° Clientes) -->
@@ -73,22 +84,39 @@
         <td mat-cell *matCellDef="let row">{{ row.marca }}</td>
       </ng-container>
 
-      <!-- 11. CÓDIGO N (Editable con Autocomplete) -->
+      <!-- 11. CÓDIGO N (Buscador con Lupa por Marca y Categoría) -->
       <ng-container matColumnDef="codigoN">
         <th mat-header-cell *matHeaderCellDef class="th-codigo-n">CODIGO N</th>
         <td mat-cell *matCellDef="let row" class="td-codigo-n">
           <div class="codigo-n-container">
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="input-codigo-n">
-              <input 
-                matInput 
-                [(ngModel)]="row.codigoN" 
-                placeholder="Ej. RC506" 
-                [matAutocomplete]="autoN" 
+              <input
+                matInput
+                [(ngModel)]="row.codigoN"
+                (input)="onCodigoNCambio(row); buscarDestinos(row)"
+                (focus)="buscarDestinos(row)"
+                placeholder="Ej. RC506"
+                [matAutocomplete]="autoN"
               />
-              <mat-autocomplete #autoN="matAutocomplete" (optionSelected)="seleccionarDestino(row, $event.option.value)">
-                @for (opcion of opcionesPrincipalesMock; track opcion.codigo) {
+              <button 
+                mat-icon-button 
+                matSuffix 
+                type="button"
+                class="btn-lupa-celda" 
+                (click)="buscarDestinos(row, '')"
+                matTooltip="Buscar códigos existentes para {{ row.marca }} / {{ row.categoria }}"
+              >
+                <mat-icon>search</mat-icon>
+              </button>
+              <mat-autocomplete
+                #autoN="matAutocomplete"
+                (optionSelected)="seleccionarDestino(row, $event.option.value)"
+              >
+                @for (opcion of opcionesDestino; track opcion.idProducto) {
                   <mat-option [value]="opcion">
-                    <strong>{{ opcion.codigo }}</strong> - {{ opcion.descripcion }}
+                    <strong>{{ opcion.codigo }}</strong> - {{ opcion.producto }} ({{
+                      opcion.proveedor
+                    }})
                   </mat-option>
                 }
               </mat-autocomplete>
@@ -104,7 +132,14 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="columnasVisibles"></tr>
-      <tr mat-row *matRowDef="let row; columns: columnasVisibles;" class="fila-producto"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnasVisibles" class="fila-producto"></tr>
     </table>
+
+    @if (!cargando && productos.length === 0) {
+      <div class="estado-vacio">
+        <mat-icon class="icono-vacio">search</mat-icon>
+        <p>No hay registros para mostrar. Selecciona una marca y proveedor para listar sus productos.</p>
+      </div>
+    }
   </div>
 </div>

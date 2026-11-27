@@ -12,9 +12,9 @@
 }
 
 /* Anchos de campos de entrada */
-.campo-marca { width: 150px; }
-.campo-proveedor { width: 190px; }
-.campo-clientes { width: 70px; }
+.campo-marca { width: 240px; }
+.campo-proveedor { width: 330px; }
+.campo-clientes { width: 75px; }
 
 /* Botón S */
 .proveedor-container { display: flex; align-items: center; gap: 4px; }

@@ -59,6 +59,14 @@ export interface UnificarRequest {
   unificaciones: UnificacionItem[];
 }
 
+export interface FiltrosConsulta {
+  idEntidad?: number;
+  marca?: string;
+  minClientes?: number;
+  tipos?: string[];
+  situaciones?: string[];
+}
+
 export interface ResultadoUnificacion {
   totalProcesados: number;
   mensaje: string;

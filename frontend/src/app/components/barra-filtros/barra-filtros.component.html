@@ -1,21 +1,33 @@
 <div class="barra-filtros-card">
-  <!-- 1. Input Marca -->
+  <!-- 1. Buscador de Marca: carga todas las marcas y permite seleccionar -->
   <mat-form-field appearance="outline" subscriptSizing="dynamic" class="input-compacto campo-marca">
     <input
       matInput
-      [(ngModel)]="marcaSeleccionada"
+      [(ngModel)]="marcaTexto"
+      (input)="onMarcaInput()"
+      (focus)="filtrarMarcasLocales(marcaTexto)"
       placeholder="Marca"
       [matAutocomplete]="autoMarca"
     />
-    <mat-autocomplete #autoMarca="matAutocomplete">
-      <mat-option value="ENERPAC">ENERPAC</mat-option>
-      <mat-option value="SIMPLEX">SIMPLEX</mat-option>
+    <mat-autocomplete #autoMarca="matAutocomplete" (optionSelected)="onMarcaSeleccionada($event)">
+      @for (m of marcasFiltradas; track m.idMarca) {
+        <mat-option [value]="m.marca">
+          {{ m.marca }}
+        </mat-option>
+      }
     </mat-autocomplete>
   </mat-form-field>
 
-  <!-- 2. Botón [S] y Buscador de Proveedor -->
+  <!-- 2. Botón [S] y Buscador de Supplier (Proveedores para la marca seleccionada) -->
   <div class="proveedor-container">
-    <button type="button" class="btn-s" title="Selector de Proveedor (Supplier)">S</button>
+    <button
+      type="button"
+      class="btn-s"
+      (click)="toggleProveedor()"
+      title="Selector de Proveedor (Supplier)"
+    >
+      S
+    </button>
     <mat-form-field
       appearance="outline"
       subscriptSizing="dynamic"
@@ -23,13 +35,18 @@
     >
       <input
         matInput
-        [(ngModel)]="proveedorSeleccionado"
-        placeholder="Proveedor"
+        [(ngModel)]="proveedorTexto"
+        (input)="onProveedorInput()"
+        (focus)="cargarProveedoresPorMarca(marcaTexto, proveedorTexto)"
+        [placeholder]="marcaTexto ? 'Proveedor para ' + marcaTexto : 'Proveedor'"
         [matAutocomplete]="autoProveedor"
       />
-      <mat-autocomplete #autoProveedor="matAutocomplete">
-        <mat-option value="D-OTERO D">D-OTERO D</mat-option>
-        <mat-option value="TRC ASTUDILLO-J">TRC ASTUDILLO-J</mat-option>
+      <mat-autocomplete #autoProveedor="matAutocomplete" (optionSelected)="onProveedorSeleccionado($event)">
+        @for (prov of proveedoresFiltrados; track prov.idEntidad) {
+          <mat-option [value]="prov">
+            <strong>{{ prov.abreviacion }}</strong> - {{ prov.razonSocial }}
+          </mat-option>
+        }
       </mat-autocomplete>
     </mat-form-field>
   </div>
@@ -42,7 +59,7 @@
       subscriptSizing="dynamic"
       class="input-compacto campo-clientes"
     >
-      <mat-select [(ngModel)]="minClientes">
+      <mat-select [(ngModel)]="minClientes" (selectionChange)="ejecutarConsulta()">
         <mat-option [value]="0">0</mat-option>
         <mat-option [value]="1">1</mat-option>
         <mat-option [value]="2">2</mat-option>
@@ -55,6 +72,7 @@
   <mat-button-toggle-group
     multiple
     [(ngModel)]="tiposSeleccionados"
+    (change)="ejecutarConsulta()"
     class="toggle-grupo toggle-tipo"
     aria-label="Filtro Tipo"
   >
@@ -68,6 +86,7 @@
   <mat-button-toggle-group
     multiple
     [(ngModel)]="situacionesSeleccionadas"
+    (change)="ejecutarConsulta()"
     class="toggle-grupo toggle-situacion"
     aria-label="Filtro Situación"
   >
@@ -80,10 +99,20 @@
 
   <!-- 6. Botones de Acción (Lupa y Diskette) -->
   <div class="acciones-container">
-    <button mat-icon-button class="btn-lupa" matTooltip="Consultar (Lupa)">
+    <button
+      mat-icon-button
+      class="btn-lupa"
+      (click)="ejecutarConsulta()"
+      matTooltip="Consultar (Lupa)"
+    >
       <mat-icon>search</mat-icon>
     </button>
-    <button mat-icon-button class="btn-guardar" matTooltip="Guardar unificaciones (Diskette)">
+    <button
+      mat-icon-button
+      class="btn-guardar"
+      (click)="ejecutarGuardar()"
+      matTooltip="Guardar unificaciones (Diskette)"
+    >
       <mat-icon>save</mat-icon>
     </button>
   </div>

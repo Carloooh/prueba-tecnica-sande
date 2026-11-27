@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -6,7 +6,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
-import { ProductoConsultaItem } from '../../models/producto.model';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ProductoService } from '../../services/producto.service';
+import { ProductoConsultaItem, ProductoPrincipal } from '../../models/producto.model';
 
 @Component({
   selector: 'app-tabla-unificacion',
@@ -18,13 +22,24 @@ import { ProductoConsultaItem } from '../../models/producto.model';
     MatFormFieldModule,
     MatInputModule,
     MatAutocompleteModule,
-    MatIconModule
+    MatIconModule,
+    MatButtonModule,
+    MatProgressBarModule,
+    MatTooltipModule
   ],
   templateUrl: './tabla-unificacion.component.html',
   styleUrl: './tabla-unificacion.component.css'
 })
 export class TablaUnificacionComponent {
-  // Columnas exactas de la grilla impresa de SANDE
+  private productoService = inject(ProductoService);
+
+  @Input() productos: ProductoConsultaItem[] = [];
+  @Input() cargando: boolean = false;
+
+  // Lista dinámica de opciones para el autocomplete de CODIGO N
+  opcionesDestino: ProductoPrincipal[] = [];
+
+  // Columnas visibles de la grilla
   columnasVisibles: string[] = [
     'seccion',
     'categoria',
@@ -39,70 +54,36 @@ export class TablaUnificacionComponent {
     'codigoN'
   ];
 
-  // Datos mock para visualización
-  productos: ProductoConsultaItem[] = [
-    {
-      idProducto: 675212,
-      idEntidad: 10983,
-      seccion: 'HIDRAULICA',
-      categoria: 'CILINDRO HIDRAULICO SIMPLE ACCION',
-      codigo: 'RC506-O',
-      code: 'RC506-O',
-      producto: 'CILINDRO HIDRAULICO SIMPLE ACCION 50T 6.25"C',
-      nClientes: 1,
-      tipo: 'P',
-      situacion: 'I',
-      fui: '2609',
-      marca: 'ENERPAC',
-      stockTotal: 4,
-      codigoN: '',
-      productoDestinoNombre: ''
-    },
-    {
-      idProducto: 675351,
-      idEntidad: 10983,
-      seccion: 'HIDRAULICA',
-      categoria: 'G/GF MANOMETRO HIDRAULICO',
-      codigo: 'G-2535L-O',
-      code: 'G-2535L-O',
-      producto: 'MANOMETRO HIDRAULICO (G/GF) 1/4"NPTF 10.000 PSI',
-      nClientes: 4,
-      tipo: 'P',
-      situacion: 'I',
-      fui: '2608',
-      marca: 'ENERPAC',
-      stockTotal: 0,
-      codigoN: '',
-      productoDestinoNombre: ''
-    },
-    {
-      idProducto: 675502,
-      idEntidad: 10983,
-      seccion: 'HIDRAULICA',
-      categoria: 'RCS CILINDRO HIDRAULICO BAJA ALTURA',
-      codigo: 'RCS-502-O',
-      code: 'RCS-502-O',
-      producto: 'CILINDRO HIDRAULICO BAJA ALTURA S/ACCION 50T',
-      nClientes: 1,
-      tipo: 'P',
-      situacion: 'I',
-      fui: '2604',
-      marca: 'ENERPAC',
-      stockTotal: 1,
-      codigoN: '',
-      productoDestinoNombre: ''
-    }
-  ];
+  // "Presionando la lupa, se debe poder buscar los codigos existentes para esa marca y esa categoria, seleccionandolo."
+  buscarDestinos(row: ProductoConsultaItem, textoBusqueda?: string) {
+    const q = (textoBusqueda !== undefined ? textoBusqueda : row.codigoN)?.trim() || '';
+    
+    // Consulta filtrando por la marca y la categoría de la fila actual
+    this.productoService.buscarPrincipales(q, row.idProducto, row.marca, row.categoria).subscribe({
+      next: (data) => {
+        this.opcionesDestino = data;
+      },
+      error: (err) => console.error('Error al buscar productos principales por marca/categoría:', err)
+    });
+  }
 
-  // Opciones mock para el autocomplete
-  opcionesPrincipalesMock = [
-    { codigo: 'RC506', descripcion: 'RC506 - CILINDRO HIDRAULICO 50T (ENERPAC)' },
-    { codigo: 'G-2535L', descripcion: 'G-2535L - MANOMETRO HIDRAULICO (ENERPAC)' },
-    { codigo: 'RCS-502', descripcion: 'RCS-502 - CILINDRO BAJA ALTURA (ENERPAC)' }
-  ];
-
-  seleccionarDestino(row: ProductoConsultaItem, opcion: any) {
+  // Al seleccionar una opción del autocompletado
+  seleccionarDestino(row: ProductoConsultaItem, opcion: ProductoPrincipal) {
     row.codigoN = opcion.codigo;
-    row.productoDestinoNombre = opcion.descripcion;
+    row.idProductoDestino = opcion.idProducto;
+    row.productoDestinoNombre = `${opcion.codigo} - ${opcion.producto} (${opcion.proveedor})`;
+  }
+
+  // Si el usuario edita o borra el texto manualmente
+  onCodigoNCambio(row: ProductoConsultaItem) {
+    if (!row.codigoN || !row.codigoN.trim()) {
+      row.idProductoDestino = null;
+      row.productoDestinoNombre = null;
+    }
+  }
+
+  // Cuenta cuántos productos tienen destino asignado listo para unificar
+  contarPendientes(): number {
+    return this.productos.filter(p => !!p.idProductoDestino).length;
   }
 }

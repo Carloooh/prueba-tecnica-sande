@@ -1,14 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ProductoService } from '../../services/producto.service';
+import { FiltrosConsulta, Marca, Proveedor } from '../../models/producto.model';
 
 @Component({
   selector: 'app-barra-filtros',
@@ -28,13 +30,118 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   templateUrl: './barra-filtros.component.html',
   styleUrl: './barra-filtros.component.css'
 })
-export class BarraFiltrosComponent {
-  // Filtros desactivados por defecto para que el usuario elija qué filtrar
-  marcaSeleccionada = '';
-  proveedorSeleccionado = '';
+export class BarraFiltrosComponent implements OnInit {
+  private productoService = inject(ProductoService);
+
+  @Output() consultar = new EventEmitter<FiltrosConsulta>();
+  @Output() guardar = new EventEmitter<void>();
+
+  // Filtros de texto seleccionados
+  marcaTexto = '';
+  proveedorTexto = '';
+  idEntidadSeleccionada?: number;
+
+  // Catálogos cargados desde la BD
+  marcasDisponibles: Marca[] = [];
+  marcasFiltradas: Marca[] = [];
+  proveedoresFiltrados: Proveedor[] = [];
+
+  // Filtro de clientes mínimos (#C)
   minClientes = 0;
-  
-  // Toggles desactivados por defecto
+
+  // Multi-toggles
   tiposSeleccionados: string[] = [];
   situacionesSeleccionadas: string[] = [];
+
+  ngOnInit() {
+    // 1. Cargar todas las marcas existentes al inicializar
+    this.cargarTodasLasMarcas();
+  }
+
+  // Carga todas las marcas disponibles en la BD
+  cargarTodasLasMarcas() {
+    this.productoService.getMarcas('').subscribe({
+      next: (data) => {
+        this.marcasDisponibles = data;
+        this.filtrarMarcasLocales(this.marcaTexto);
+      },
+      error: (err) => console.error('Error al cargar marcas:', err)
+    });
+  }
+
+  filtrarMarcasLocales(filtro: string) {
+    const q = filtro?.toLowerCase().trim() || '';
+    if (!q) {
+      this.marcasFiltradas = [...this.marcasDisponibles];
+    } else {
+      this.marcasFiltradas = this.marcasDisponibles.filter(m =>
+        m.marca.toLowerCase().includes(q)
+      );
+    }
+  }
+
+  onMarcaInput() {
+    this.filtrarMarcasLocales(this.marcaTexto);
+  }
+
+  // Al seleccionar una marca:
+  // Carga en el buscador de supplier todos los proveedores para esa marca
+  onMarcaSeleccionada(event: MatAutocompleteSelectedEvent) {
+    const marcaElegida = event.option.value;
+    this.marcaTexto = marcaElegida;
+
+    // Reseteamos el proveedor anterior para que elija uno de la nueva marca
+    this.proveedorTexto = '';
+    this.idEntidadSeleccionada = undefined;
+
+    // Cargamos los proveedores asociados a esa marca
+    this.cargarProveedoresPorMarca(marcaElegida);
+  }
+
+  // Carga proveedores para la marca seleccionada
+  cargarProveedoresPorMarca(marca: string, query: string = '') {
+    this.productoService.getProveedores(query, marca).subscribe({
+      next: (data) => {
+        this.proveedoresFiltrados = data;
+      },
+      error: (err) => console.error('Error al cargar proveedores por marca:', err)
+    });
+  }
+
+  onProveedorInput() {
+    this.idEntidadSeleccionada = undefined;
+    this.cargarProveedoresPorMarca(this.marcaTexto, this.proveedorTexto);
+  }
+
+  // Al seleccionar un proveedor:
+  // "Una vez lista esta selección se debe listar en el formulario los productos de esa marca para ese proveedor"
+  onProveedorSeleccionado(event: MatAutocompleteSelectedEvent) {
+    const prov: Proveedor = event.option.value;
+    this.proveedorTexto = prov.abreviacion;
+    this.idEntidadSeleccionada = prov.idEntidad;
+
+    // Dispara automáticamente la consulta para listar de inmediato en la tabla
+    this.ejecutarConsulta();
+  }
+
+  // Al presionar el botón [S], recarga la lista de proveedores para la marca actual
+  toggleProveedor() {
+    this.cargarProveedoresPorMarca(this.marcaTexto, '');
+  }
+
+  // Emite la consulta (tanto manual por Lupa como automática al seleccionar proveedor)
+  ejecutarConsulta() {
+    this.consultar.emit({
+      idEntidad: this.idEntidadSeleccionada,
+      marca: this.marcaTexto?.trim() || undefined,
+      minClientes: this.minClientes,
+      tipos: this.tiposSeleccionados.length > 0 ? this.tiposSeleccionados : undefined,
+      situaciones: this.situacionesSeleccionadas.length > 0 ? this.situacionesSeleccionadas : undefined
+    });
+  }
+
+  // Emite el guardado de unificaciones (Diskette)
+  ejecutarGuardar() {
+    this.guardar.emit();
+  }
 }

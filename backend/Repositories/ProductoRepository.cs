@@ -6,7 +6,7 @@ namespace Sande.Api.Repositories;
 
 public interface IProductoRepository
 {
-    Task<List<ProveedorDto>> GetProveedoresAsync(string? q);
+    Task<List<ProveedorDto>> GetProveedoresAsync(string? q, string? marca = null);
     Task<List<MarcaDto>> GetMarcasAsync(string? q, int? idEntidad);
     Task<ProductosConsultaResponseDto> ConsultarProductosAsync(
         int? idEntidad,
@@ -14,7 +14,7 @@ public interface IProductoRepository
         int? minClientes,
         List<string>? tipos,
         List<string>? situaciones);
-    Task<List<ProductoPrincipalDto>> BuscarProductosPrincipalesAsync(string? q, int? excluirId);
+    Task<List<ProductoPrincipalDto>> BuscarProductosPrincipalesAsync(string? q, int? excluirId, string? marca = null, string? categoria = null);
     Task UnificarProductoAsync(int idProductoOrigen, int idEntidadOrigen, int idProductoDestino);
 }
 
@@ -28,27 +28,44 @@ public class ProductoRepository : IProductoRepository
             ?? throw new InvalidOperationException("Cadena de conexión 'DefaultConnection' no configurada.");
     }
 
-    // Selector de Supplier: consulta entidades de tipo 1 (proveedores)
-    public async Task<List<ProveedorDto>> GetProveedoresAsync(string? q)
+    // Selector de Supplier: consulta proveedores, opcionalmente filtrados por la marca seleccionada
+    public async Task<List<ProveedorDto>> GetProveedoresAsync(string? q, string? marca = null)
     {
         var proveedores = new List<ProveedorDto>();
 
         using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
 
-        var sql = @"
-            SELECT id_entidad, Gana_rut, abreviacion, razon_social
-            FROM dbo.entidad
-            WHERE Tipo = 1 AND gana_secuencia = '001'";
+        string sql;
+        if (!string.IsNullOrWhiteSpace(marca))
+        {
+            // Proveedores que comercializan productos para la marca seleccionada
+            sql = @"
+                SELECT DISTINCT e.id_entidad, e.Gana_rut, e.abreviacion, e.razon_social
+                FROM dbo.tfc_vista_maestro_productos v
+                INNER JOIN dbo.entidad e ON v.id_entidad = e.id_entidad
+                WHERE v.marca = @marca";
+        }
+        else
+        {
+            sql = @"
+                SELECT e.id_entidad, e.Gana_rut, e.abreviacion, e.razon_social
+                FROM dbo.entidad e
+                WHERE e.Tipo = 1 AND (e.gana_secuencia = '001' OR e.gana_secuencia IS NULL)";
+        }
 
         if (!string.IsNullOrWhiteSpace(q))
         {
-            sql += " AND (abreviacion LIKE @q OR razon_social LIKE @q OR Gana_rut LIKE @q)";
+            sql += " AND (e.abreviacion LIKE @q OR e.razon_social LIKE @q OR e.Gana_rut LIKE @q)";
         }
 
-        sql += " ORDER BY abreviacion ASC";
+        sql += " ORDER BY e.abreviacion ASC";
 
         using var command = new SqlCommand(sql, connection);
+        if (!string.IsNullOrWhiteSpace(marca))
+        {
+            command.Parameters.AddWithValue("@marca", marca.Trim());
+        }
         if (!string.IsNullOrWhiteSpace(q))
         {
             command.Parameters.AddWithValue("@q", $"%{q.Trim()}%");
@@ -229,8 +246,12 @@ public class ProductoRepository : IProductoRepository
         return response;
     }
 
-    // Autocomplete celda CODIGO N: busca productos principales activos
-    public async Task<List<ProductoPrincipalDto>> BuscarProductosPrincipalesAsync(string? q, int? excluirId)
+    // Autocomplete celda CODIGO N: busca productos principales existentes para esa marca y categoría
+    public async Task<List<ProductoPrincipalDto>> BuscarProductosPrincipalesAsync(
+        string? q, 
+        int? excluirId, 
+        string? marca = null, 
+        string? categoria = null)
     {
         var productos = new List<ProductoPrincipalDto>();
 
@@ -238,7 +259,7 @@ public class ProductoRepository : IProductoRepository
         await connection.OpenAsync();
 
         var sql = @"
-            SELECT TOP 20
+            SELECT TOP 30
                 id_producto,
                 codigo_prod,
                 code,
@@ -247,27 +268,35 @@ public class ProductoRepository : IProductoRepository
             FROM dbo.tfc_vista_maestro_productos
             WHERE 1=1";
 
+        using var command = new SqlCommand();
+        command.Connection = connection;
+
         if (excluirId.HasValue && excluirId.Value > 0)
         {
             sql += " AND id_producto <> @excluirId";
+            command.Parameters.AddWithValue("@excluirId", excluirId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(marca))
+        {
+            sql += " AND marca = @marca";
+            command.Parameters.AddWithValue("@marca", marca.Trim());
+        }
+
+        if (!string.IsNullOrWhiteSpace(categoria))
+        {
+            sql += " AND categoria = @categoria";
+            command.Parameters.AddWithValue("@categoria", categoria.Trim());
         }
 
         if (!string.IsNullOrWhiteSpace(q))
         {
             sql += " AND (codigo_prod LIKE @q OR descrip_prod LIKE @q)";
+            command.Parameters.AddWithValue("@q", $"%{q.Trim()}%");
         }
 
         sql += " ORDER BY codigo_prod ASC";
-
-        using var command = new SqlCommand(sql, connection);
-        if (excluirId.HasValue && excluirId.Value > 0)
-        {
-            command.Parameters.AddWithValue("@excluirId", excluirId.Value);
-        }
-        if (!string.IsNullOrWhiteSpace(q))
-        {
-            command.Parameters.AddWithValue("@q", $"%{q.Trim()}%");
-        }
+        command.CommandText = sql;
 
         using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())

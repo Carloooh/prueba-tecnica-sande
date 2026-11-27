@@ -37,12 +37,16 @@ public class ProductosController : ControllerBase
         return Ok(resultado);
     }
 
-    // GET /api/productos/principales/buscar?q={texto}&excluirId={idProdOrigen}
-    // Autocomplete celda CODIGO N: busca productos principales activos (id_prioridad = 1)
+    // GET /api/productos/principales/buscar?q={texto}&excluirId={idProdOrigen}&marca={marca}&categoria={cat}
+    // Autocomplete celda CODIGO N: busca productos principales activos (id_prioridad = 1) para esa marca y categoría
     [HttpGet("principales/buscar")]
-    public async Task<IActionResult> BuscarPrincipales([FromQuery] string? q, [FromQuery] int? excluirId)
+    public async Task<IActionResult> BuscarPrincipales(
+        [FromQuery] string? q, 
+        [FromQuery] int? excluirId,
+        [FromQuery] string? marca,
+        [FromQuery] string? categoria)
     {
-        var productos = await _service.BuscarProductosPrincipalesAsync(q, excluirId);
+        var productos = await _service.BuscarProductosPrincipalesAsync(q, excluirId, marca, categoria);
         return Ok(productos);
     }
 

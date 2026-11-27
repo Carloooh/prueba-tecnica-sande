@@ -14,11 +14,11 @@ public class ProveedoresController : ControllerBase
         _service = service;
     }
 
-    // GET /api/proveedores?q={texto}
+    // GET /api/proveedores?q={texto}&marca={marca}
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] string? q)
+    public async Task<IActionResult> Get([FromQuery] string? q, [FromQuery] string? marca)
     {
-        var proveedores = await _service.GetProveedoresAsync(q);
+        var proveedores = await _service.GetProveedoresAsync(q, marca);
         return Ok(proveedores);
     }
 }

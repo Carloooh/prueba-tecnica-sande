@@ -5,7 +5,7 @@ namespace Sande.Api.Services;
 
 public interface IProductoService
 {
-    Task<List<ProveedorDto>> GetProveedoresAsync(string? q);
+    Task<List<ProveedorDto>> GetProveedoresAsync(string? q, string? marca = null);
     Task<List<MarcaDto>> GetMarcasAsync(string? q, int? idEntidad);
     Task<ProductosConsultaResponseDto> ConsultarProductosAsync(
         int? idEntidad,
@@ -13,7 +13,7 @@ public interface IProductoService
         int? minClientes,
         List<string>? tipos,
         List<string>? situaciones);
-    Task<List<ProductoPrincipalDto>> BuscarProductosPrincipalesAsync(string? q, int? excluirId);
+    Task<List<ProductoPrincipalDto>> BuscarProductosPrincipalesAsync(string? q, int? excluirId, string? marca = null, string? categoria = null);
     Task<ResultadoUnificacionDto> UnificarProductosAsync(UnificarRequestDto request);
 }
 
@@ -32,9 +32,9 @@ public class ProductoService : IProductoService
         _repository = repository;
     }
 
-    public async Task<List<ProveedorDto>> GetProveedoresAsync(string? q)
+    public async Task<List<ProveedorDto>> GetProveedoresAsync(string? q, string? marca = null)
     {
-        return await _repository.GetProveedoresAsync(q);
+        return await _repository.GetProveedoresAsync(q, marca);
     }
 
     public async Task<List<MarcaDto>> GetMarcasAsync(string? q, int? idEntidad)
@@ -52,44 +52,47 @@ public class ProductoService : IProductoService
         return await _repository.ConsultarProductosAsync(idEntidad, marca, minClientes, tipos, situaciones);
     }
 
-    public async Task<List<ProductoPrincipalDto>> BuscarProductosPrincipalesAsync(string? q, int? excluirId)
+    public async Task<List<ProductoPrincipalDto>> BuscarProductosPrincipalesAsync(
+        string? q, 
+        int? excluirId, 
+        string? marca = null, 
+        string? categoria = null)
     {
-        return await _repository.BuscarProductosPrincipalesAsync(q, excluirId);
+        return await _repository.BuscarProductosPrincipalesAsync(q, excluirId, marca, categoria);
     }
 
     public async Task<ResultadoUnificacionDto> UnificarProductosAsync(UnificarRequestDto request)
     {
-        if (request == null || request.Unificaciones == null || !request.Unificaciones.Any())
+        if (request?.Unificaciones == null || !request.Unificaciones.Any())
         {
-            throw new ArgumentException("No se enviaron filas para unificar.");
+            throw new ArgumentException("Debe proporcionar al menos un producto para unificar.");
         }
 
-        int exitosos = 0;
+        int procesados = 0;
 
         foreach (var item in request.Unificaciones)
         {
-            // Regla de negocio: impedir auto-agrupación
+            if (item.IdProductoOrigen <= 0 || item.IdProductoDestino <= 0)
+            {
+                throw new ArgumentException("Los identificadores de producto origen y destino deben ser válidos.");
+            }
+
             if (item.IdProductoOrigen == item.IdProductoDestino)
             {
-                throw new InvalidOperationException($"El producto {item.IdProductoOrigen} no puede unificarse consigo mismo.");
+                throw new InvalidOperationException($"No se puede unificar el producto {item.IdProductoOrigen} consigo mismo.");
             }
 
-            if (item.IdProductoOrigen <= 0 || item.IdProductoDestino <= 0 || item.IdEntidadOrigen <= 0)
-            {
-                throw new ArgumentException("Los identificadores de producto y proveedor deben ser válidos.");
-            }
-
-            // Ejecutar la transacción en BD para cada fila con CODIGO N asignado
+            // Ejecuta el stored procedure atómico para cada par origen-destino
             await _repository.UnificarProductoAsync(item.IdProductoOrigen, item.IdEntidadOrigen, item.IdProductoDestino);
-            exitosos++;
+            procesados++;
         }
 
         return new ResultadoUnificacionDto
         {
-            TotalProcesados = exitosos,
-            Mensaje = exitosos == 1 
-                ? "Se unificó 1 producto con éxito y su stock fue traspasado."
-                : $"Se unificaron {exitosos} productos con éxito y sus stocks fueron traspasados."
+            TotalProcesados = procesados,
+            Mensaje = procesados == 1
+                ? "Se unificó 1 producto correctamente."
+                : $"Se unificaron {procesados} productos correctamente."
         };
     }
 }
