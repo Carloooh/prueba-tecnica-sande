@@ -32,6 +32,7 @@ export interface ProductoConsultaItem {
   codigoN?: string | null;
   idProductoDestino?: number | null;
   productoDestinoNombre?: string | null;
+  errorDestino?: boolean;
 }
 
 export interface ProductosConsultaResponse {

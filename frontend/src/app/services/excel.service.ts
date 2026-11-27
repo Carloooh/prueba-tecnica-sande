@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx-js-style';
 import { ProductoConsultaItem } from '../models/producto.model';
 
 export interface FilaExcelImportada {
+  filaExcel: number;
   idProducto: number;
   codigo: string;
   codigoN: string;
@@ -162,22 +163,34 @@ export class ExcelService {
     const primeraHoja = wb.SheetNames[0];
     const ws = wb.Sheets[primeraHoja];
 
-    const filasRaw: any[] = XLSX.utils.sheet_to_json(ws, { defval: '' });
+    const filasRaw: Record<string, unknown>[] = XLSX.utils.sheet_to_json(ws, { defval: '' });
     const resultado: FilaExcelImportada[] = [];
 
-    for (const fila of filasRaw) {
-      const idProducto = Number(fila['ID_PRODUCTO'] || fila['idProducto'] || fila['id_producto'] || 0);
-      const codigo = String(fila['CODIGO'] || fila['codigo'] || fila['Codigo'] || '').trim();
-      const codigoN = String(fila['CODIGO_N'] || fila['codigoN'] || fila['CODIGO N'] || fila['CodigoN'] || '').trim();
+    const leerColumna = (fila: Record<string, unknown>, ...aliasNormalizados: string[]): string => {
+      for (const key of Object.keys(fila)) {
+        const normalizada = key.trim().toLowerCase().replace(/[\s_]+/g, '');
+        if (aliasNormalizados.includes(normalizada)) {
+          return String(fila[key] ?? '').trim();
+        }
+      }
+      return '';
+    };
 
-      if ((idProducto > 0 || codigo) && codigoN) {
+    filasRaw.forEach((fila, index) => {
+      const idProductoRaw = leerColumna(fila, 'idproducto');
+      const idProducto = Number(idProductoRaw) || 0;
+      const codigo = leerColumna(fila, 'codigo', 'código');
+      const codigoN = leerColumna(fila, 'codigon', 'códigon');
+
+      if (codigoN) {
         resultado.push({
+          filaExcel: index + 2,
           idProducto,
           codigo,
           codigoN
         });
       }
-    }
+    });
 
     return resultado;
   }

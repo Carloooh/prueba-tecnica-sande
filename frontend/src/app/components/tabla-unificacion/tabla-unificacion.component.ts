@@ -96,6 +96,7 @@ export class TablaUnificacionComponent implements OnChanges, AfterViewInit {
     row.codigoN = opcion.codigo;
     row.idProductoDestino = opcion.idProducto;
     row.productoDestinoNombre = `${opcion.codigo} - ${opcion.producto} (${opcion.proveedor})`;
+    row.errorDestino = false;
     this.cdr.markForCheck();
   }
 
@@ -104,6 +105,10 @@ export class TablaUnificacionComponent implements OnChanges, AfterViewInit {
     if (!row.codigoN || !row.codigoN.trim()) {
       row.idProductoDestino = null;
       row.productoDestinoNombre = null;
+      row.errorDestino = false;
+    } else if (row.errorDestino) {
+      row.productoDestinoNombre = null;
+      row.errorDestino = false;
     }
     this.cdr.markForCheck();
   }

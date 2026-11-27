@@ -1,5 +1,8 @@
 import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { firstValueFrom } from 'rxjs';
 import { BarraFiltrosComponent } from '../barra-filtros/barra-filtros.component';
 import { TablaUnificacionComponent } from '../tabla-unificacion/tabla-unificacion.component';
@@ -7,13 +10,113 @@ import { ProductoService } from '../../services/producto.service';
 import { ExcelService } from '../../services/excel.service';
 import { FiltrosConsulta, ProductoConsultaItem, UnificacionItem } from '../../models/producto.model';
 
+interface ErrorImportacionExcel {
+  filaExcel: number;
+  codigo: string;
+  codigoN: string;
+  motivo: string;
+}
+
+interface ResumenImportacionData {
+  totalFilas: number;
+  asignados: number;
+  errores: ErrorImportacionExcel[];
+}
+
+@Component({
+  selector: 'app-confirmar-reset-dialog',
+  standalone: true,
+  imports: [MatDialogModule, MatButtonModule, MatIconModule],
+  template: `
+    <h2 mat-dialog-title style="display: flex; align-items: center; gap: 8px; margin: 0;">
+      <mat-icon color="warn">restart_alt</mat-icon>
+      Reiniciar datos de prueba
+    </h2>
+    <mat-dialog-content style="padding-top: 8px; font-size: 14px; color: #334155;">
+      <p style="margin: 0;">
+        Esta acción ejecutará <code>sp_Reset_Datos_Prueba</code> en la base de datos y restaurará las unificaciones y stocks a su estado inicial.
+      </p>
+      <p style="margin: 10px 0 0; color: #b91c1c; font-weight: 500;">
+        ¿Deseas continuar?
+      </p>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button [mat-dialog-close]="false">Cancelar</button>
+      <button mat-flat-button color="warn" [mat-dialog-close]="true">Sí, reiniciar</button>
+    </mat-dialog-actions>
+  `
+})
+export class ConfirmarResetDialogComponent {}
+
+@Component({
+  selector: 'app-resumen-importacion-dialog',
+  standalone: true,
+  imports: [MatDialogModule, MatButtonModule, MatIconModule],
+  template: `
+    <h2 mat-dialog-title style="display: flex; align-items: center; gap: 8px; margin: 0;">
+      <mat-icon style="color: #dc2626;">warning_amber</mat-icon>
+      Detalle de importación Excel
+    </h2>
+    <mat-dialog-content style="padding-top: 8px;">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; font-size: 13px; font-weight: 600;">
+        <span style="background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 12px;">
+          Validados: {{ data.asignados }}
+        </span>
+        <span style="background: #fee2e2; color: #b91c1c; padding: 4px 10px; border-radius: 12px;">
+          Con error / sin coincidencia: {{ data.errores.length }}
+        </span>
+      </div>
+
+      @if (data.asignados > 0) {
+        <p style="margin: 0 0 10px; font-size: 13px; color: #15803d;">
+          Los {{ data.asignados }} códigos validados ya se cargaron en la tabla. Presiona el diskette para guardarlos.
+        </p>
+      } @else {
+        <p style="margin: 0 0 10px; font-size: 13px; color: #475569;">
+          No se pudo validar ninguna fila del archivo con los registros visibles en pantalla. Revisa el detalle:
+        </p>
+      }
+
+      <div style="max-height: 300px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 6px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+          <thead>
+            <tr style="background: #f8fafc; text-align: left; border-bottom: 1px solid #cbd5e1;">
+              <th style="padding: 8px 10px;">Fila</th>
+              <th style="padding: 8px 10px;">Código</th>
+              <th style="padding: 8px 10px;">Código N</th>
+              <th style="padding: 8px 10px;">Motivo</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (err of data.errores; track $index) {
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 6px 10px; white-space: nowrap;">{{ err.filaExcel }}</td>
+                <td style="padding: 6px 10px; font-weight: 600; color: #1976d2; white-space: nowrap;">{{ err.codigo }}</td>
+                <td style="padding: 6px 10px; font-weight: 600; white-space: nowrap;">{{ err.codigoN }}</td>
+                <td style="padding: 6px 10px; color: #b91c1c;">{{ err.motivo }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-flat-button color="primary" [mat-dialog-close]="true">Entendido</button>
+    </mat-dialog-actions>
+  `
+})
+export class ResumenImportacionDialogComponent {
+  data = inject<ResumenImportacionData>(MAT_DIALOG_DATA);
+}
+
 @Component({
   selector: 'app-unificacion',
   standalone: true,
   imports: [
     BarraFiltrosComponent, 
     TablaUnificacionComponent,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatDialogModule
   ],
   template: `
     <div class="unificacion-layout">
@@ -23,6 +126,7 @@ import { FiltrosConsulta, ProductoConsultaItem, UnificacionItem } from '../../mo
         (guardar)="alGuardar()" 
         (exportar)="alExportar()"
         (archivoImportado)="alImportar($event)"
+        (reiniciar)="alReiniciar()"
       />
       <app-tabla-unificacion 
         class="tabla-fija-wrapper"
@@ -67,6 +171,7 @@ export class UnificacionComponent {
   private productoService = inject(ProductoService);
   private excelService = inject(ExcelService);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
   private cdr = inject(ChangeDetectorRef);
 
   productos: ProductoConsultaItem[] = [];
@@ -184,45 +289,101 @@ export class UnificacionComponent {
       }
 
       let asignados = 0;
+      const errores: ErrorImportacionExcel[] = [];
 
       // Para cada fila leída del Excel, buscamos la fila correspondiente y validamos el destino
       for (const f of filas) {
-        const row = this.productos.find(p => 
-          (f.idProducto > 0 && p.idProducto === f.idProducto) ||
-          (f.codigo && p.codigo.trim().toLowerCase() === f.codigo.trim().toLowerCase())
-        );
+        if (!(f.idProducto > 0) && !f.codigo) {
+          errores.push({
+            filaExcel: f.filaExcel,
+            codigo: '(sin código)',
+            codigoN: f.codigoN,
+            motivo: 'Falta ID_PRODUCTO y CODIGO para identificar el producto.'
+          });
+          continue;
+        }
 
-        if (row) {
-          row.codigoN = f.codigoN;
+        const row =
+          (f.idProducto > 0 ? this.productos.find(p => p.idProducto === f.idProducto) : undefined) ||
+          (f.codigo ? this.productos.find(p => p.codigo.trim().toLowerCase() === f.codigo.trim().toLowerCase()) : undefined);
 
-          try {
-            const destinos = await firstValueFrom(
-              this.productoService.buscarPrincipales(f.codigoN, row.idProducto, row.marca, row.categoria)
-            );
+        if (!row) {
+          errores.push({
+            filaExcel: f.filaExcel,
+            codigo: f.codigo || `ID ${f.idProducto}`,
+            codigoN: f.codigoN,
+            motivo: 'El producto no está en los resultados actuales (revisa los filtros o ya fue unificado).'
+          });
+          continue;
+        }
 
-            const exacto = destinos.find(d => d.codigo.trim().toLowerCase() === f.codigoN.toLowerCase()) || destinos[0];
-            if (exacto) {
-              row.idProductoDestino = exacto.idProducto;
-              row.productoDestinoNombre = `${exacto.codigo} - ${exacto.producto} (${exacto.proveedor})`;
-              asignados++;
-            } else {
-              row.idProductoDestino = null;
-              row.productoDestinoNombre = 'Código principal no encontrado';
-            }
-          } catch {
+        row.codigoN = f.codigoN;
+
+        if (f.codigoN.trim().toLowerCase() === row.codigo.trim().toLowerCase()) {
+          row.idProductoDestino = null;
+          row.productoDestinoNombre = 'No puede unificarse consigo mismo';
+          row.errorDestino = true;
+          errores.push({
+            filaExcel: f.filaExcel,
+            codigo: row.codigo,
+            codigoN: f.codigoN,
+            motivo: 'No se puede asignar el mismo código como destino (auto-unificación).'
+          });
+          continue;
+        }
+
+        try {
+          const destinos = await firstValueFrom(
+            this.productoService.buscarPrincipales(f.codigoN, row.idProducto, row.marca, row.categoria)
+          );
+
+          const exacto =
+            destinos.find(d => d.codigo.trim().toLowerCase() === f.codigoN.trim().toLowerCase()) || destinos[0];
+          if (exacto) {
+            row.idProductoDestino = exacto.idProducto;
+            row.productoDestinoNombre = `${exacto.codigo} - ${exacto.producto} (${exacto.proveedor})`;
+            row.errorDestino = false;
+            asignados++;
+          } else {
             row.idProductoDestino = null;
-            row.productoDestinoNombre = null;
+            row.productoDestinoNombre = `No encontrado (${row.marca} / ${row.categoria})`;
+            row.errorDestino = true;
+            errores.push({
+              filaExcel: f.filaExcel,
+              codigo: row.codigo,
+              codigoN: f.codigoN,
+              motivo: `No se encontró el código principal "${f.codigoN}" para la marca ${row.marca} y categoría ${row.categoria}.`
+            });
           }
+        } catch {
+          row.idProductoDestino = null;
+          row.productoDestinoNombre = 'Error al validar código';
+          row.errorDestino = true;
+          errores.push({
+            filaExcel: f.filaExcel,
+            codigo: row.codigo,
+            codigoN: f.codigoN,
+            motivo: 'Error al consultar el destino en el servidor.'
+          });
         }
       }
 
+      this.productos = [...this.productos];
       this.cargando = false;
       this.cdr.markForCheck();
 
-      if (asignados > 0) {
+      if (errores.length === 0 && asignados > 0) {
         this.snackBar.open(`Se importaron y validaron ${asignados} códigos N. Presiona el diskette 💾 para guardar los cambios.`, 'OK', { duration: 6000 });
       } else {
-        this.snackBar.open('No se encontraron coincidencias válidas entre el Excel y los productos en pantalla.', 'OK', { duration: 5000 });
+        this.dialog.open(ResumenImportacionDialogComponent, {
+          width: '680px',
+          maxWidth: '95vw',
+          data: {
+            totalFilas: filas.length,
+            asignados,
+            errores
+          }
+        });
       }
     } catch (err: any) {
       this.cargando = false;
@@ -230,5 +391,39 @@ export class UnificacionComponent {
       console.error('Error al importar Excel:', err);
       this.snackBar.open(`Error al procesar el archivo Excel: ${err.message}`, 'Cerrar', { duration: 5000 });
     }
+  }
+
+  // Utilidad QA/Demo: reinicia los datos de prueba en BD previa confirmación
+  alReiniciar() {
+    const ref = this.dialog.open(ConfirmarResetDialogComponent, {
+      width: '420px',
+      maxWidth: '95vw'
+    });
+
+    ref.afterClosed().subscribe((confirmado: boolean) => {
+      if (!confirmado) return;
+
+      this.cargando = true;
+      this.cdr.markForCheck();
+
+      this.productoService.resetDatosPrueba().subscribe({
+        next: (res) => {
+          this.snackBar.open(res.message || 'Datos de prueba reiniciados correctamente.', 'OK', { duration: 4000 });
+          if (this.productos.length > 0 || this.filtrosActuales.marca || this.filtrosActuales.idEntidad) {
+            this.alConsultar(this.filtrosActuales);
+          } else {
+            this.cargando = false;
+            this.cdr.markForCheck();
+          }
+        },
+        error: (err) => {
+          this.cargando = false;
+          this.cdr.markForCheck();
+          console.error('Error al reiniciar datos de prueba:', err);
+          const errorMsg = err?.error?.message || 'Error al reiniciar los datos de prueba.';
+          this.snackBar.open(`Error: ${errorMsg}`, 'Cerrar', { duration: 5000 });
+        }
+      });
+    });
   }
 }
