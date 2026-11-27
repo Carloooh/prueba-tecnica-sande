@@ -1,12 +1,25 @@
+:host {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .tabla-card {
   background: #ffffff;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .tabla-header-info {
+  flex: 0 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -40,11 +53,14 @@
 }
 
 .tabla-loader {
+  flex: 0 0 auto;
   height: 3px;
 }
 
 .tabla-scroll {
-  overflow-x: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
   width: 100%;
 }
 
@@ -53,7 +69,14 @@
   font-size: 12px;
 }
 
-/* Encabezados con flecha interactiva de ordenamiento (MatSort) */
+/* Encabezados fijos (sticky) con fondo sólido para evitar transparencias al scrollear */
+.tabla-datos .mat-mdc-header-row,
+.tabla-datos .mat-mdc-header-cell {
+  background-color: #ffffff !important;
+  white-space: nowrap;
+  user-select: none;
+}
+
 th.mat-header-cell {
   background-color: #f1f5f9;
   color: #334155;

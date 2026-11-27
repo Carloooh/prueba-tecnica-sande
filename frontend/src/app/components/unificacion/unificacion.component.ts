@@ -16,19 +16,52 @@ import { FiltrosConsulta, ProductoConsultaItem, UnificacionItem } from '../../mo
     MatSnackBarModule
   ],
   template: `
-    <div style="width: 100%; padding: 12px 16px; box-sizing: border-box;">
+    <div class="unificacion-layout">
       <app-barra-filtros 
+        class="navbar-fija"
         (consultar)="alConsultar($event)" 
         (guardar)="alGuardar()" 
         (exportar)="alExportar()"
         (archivoImportado)="alImportar($event)"
       />
       <app-tabla-unificacion 
+        class="tabla-fija-wrapper"
         [productos]="productos" 
         [cargando]="cargando" 
       />
     </div>
-  `
+  `,
+  styles: [`
+    :host {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .unificacion-layout {
+      width: 100%;
+      height: 100%;
+      padding: 12px 16px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .navbar-fija {
+      flex: 0 0 auto;
+      position: relative;
+      z-index: 20;
+    }
+
+    .tabla-fija-wrapper {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+  `]
 })
 export class UnificacionComponent {
   private productoService = inject(ProductoService);
