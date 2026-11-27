@@ -125,7 +125,7 @@ ng serve
 
 Se creó un procedimiento almacenado para asegurar la ejecución atómica y eficiente de las 4 operaciones de unificación y traspaso de stock,
 
-- **Script:** `backend/Scripts/01_sp_Unificar_Producto.sql`
+- **Script:** `backend/Scripts/SP_Unificar_Producto.sql`
 - **Procedimiento:** `[dbo].[sp_Unificar_Producto]`
 - **Parametros:** `@id_producto_2` (origen), `@id_entidad_prov_2` (proveedor origen), `@id_producto_1` (destino principal).
 
@@ -137,21 +137,11 @@ Se creó un procedimiento almacenado para asegurar la ejecución atómica y efic
 4. Traspasa el stock bodega por bodega (`stocke`, `stockt2`, `stockt7`, `stockl3`) a `dbo.tfc_vista_maestro_productos_stock` y deja en 0 el producto absorbido.
 
 > **Reinicio de datos para pruebas:**
-> Si deseas reiniciar los datos de prueba en la base de datos a su estado original, ejecuta:
+> En caso de querer reiniciar los datos de prueba en la base de datos a su estado original, ejecutar en la base de datos:
 >
 > ```sql
 > EXEC [dbo].[sp_Reset_Datos_Prueba];
 > ```
-
----
-
-## Extras y Mejoras Añadidas
-
-- **Procedimiento Almacenado Optimizado:** Centralizacion de las 4 operaciones de unificacion con control de errores `TRY...CATCH`, `XACT_ABORT` y `ROLLBACK` automatico.
-- **Validacion de Auto-agrupacion:** Bloqueo preventivo en frontend y backend para impedir que un producto se unifique consigo mismo.
-- **Feedback Visual Inmediato:** Notificaciones claras al completar unificaciones o ante validaciones pendientes.
-- **Exportación e Importación Masiva en Excel (.xlsx):** Permite descargar la grilla filtrada para trabajar modificaciones masivas en Excel y reimportarlas al formulario, validando los destinos automáticamente antes de persistir los cambios.
-- **Detección Reactiva Zoneless y Refresco Inmediato:** Experiencia de usuario fluida sin recargas lentas ni bloqueos de interfaz al unificar productos.
 
 ---
 
