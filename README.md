@@ -176,6 +176,11 @@ Se desarrolló el sistema con backend y frontend separados pero subidos en monor
 
 En el backend, por gusto personal, incluí Swagger para probar y documentar los endpoints de la API de forma más visual, amigable y fácil. También dejé configurados archivos de Docker para poder levantar el proyecto de forma más cómoda.
 
+También incluí un botón para ejecutar el procedimiento almacenado para reiniciar los datos de prueba sin la necesidad de ir a la base de datos a ejecutarlo manualmente, el cual se puede borrar fácilmente cuando no se requiera eliminando su código en:
+
+- **Backend:** `backend/Controllers/ProductosController.cs` (`ResetDatosPrueba`), `backend/Services/ProductoService.cs` (`ResetDatosPruebaAsync`) y `backend/Repositories/ProductoRepository.cs` (`ResetDatosPruebaAsync`).
+- **Frontend:** `frontend/src/app/services/producto.service.ts` (`resetDatosPrueba`), `frontend/src/app/components/barra-filtros/barra-filtros.component.html`, `.ts` y `.css` (botón `.btn-reiniciar`, `@Output() reiniciar` y `ejecutarReinicio`), y `frontend/src/app/components/unificacion/unificacion.component.ts` (`ConfirmarResetDialogComponent`, `(reiniciar)="alReiniciar()"` y `alReiniciar`).
+
 El flujo del proyecto sería:
 
 1.  Interacción con las vistas desde el frontend
@@ -199,6 +204,6 @@ En el backend el flujo es:
 2. Implementar logs
 3. Restricción de acceso a la vista y backend mediante sesión de usuario, permisos y token
 4. Listar automáticamente los productos con distinto código y proveedor para listarse y que no tengan que buscarlos en la tabla manualmente para corregirlos
-5. Mejoras de interfaz, por ej. que sea más responsiva y con colores no tan planos.
+5. Mejoras de interfaz, por ej. paginación para cuando sean muchos resultados y no haya que hacer scroll infinitamente en la tabla, que sea más responsiva y con colores no tan planos.
 6. En el campo Codigo N, poder buscar por nombre y no solo código para poder filtrar más e identificar más rápido el código correspondiente dentro de la categoría en el buscador.
 7. Opción que automáticamente identifique los productos que requieren ser unificados (con IA o algo) y previa autorización humana se hagan los cambios, para no tener que recurrir al excel
