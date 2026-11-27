@@ -111,5 +111,11 @@
       <mat-icon>file_upload</mat-icon>
     </button>
     <input #fileInput type="file" (change)="onFileChange($event)" accept=".xlsx, .xls, .csv" style="display: none;" />
+
+    <span class="separador-acciones"></span>
+
+    <button mat-icon-button class="btn-reiniciar" (click)="ejecutarReinicio()" matTooltip="Reiniciar datos de prueba (BD)">
+      <mat-icon>restart_alt</mat-icon>
+    </button>
   </div>
 </div>

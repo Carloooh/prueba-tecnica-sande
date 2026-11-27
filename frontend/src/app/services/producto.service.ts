@@ -100,4 +100,9 @@ export class ProductoService {
     const payload: UnificarRequest = { unificaciones };
     return this.http.post<ResultadoUnificacion>(`${this.apiUrl}/productos/unificar`, payload);
   }
+
+  // Utilidad QA: reinicia los datos de prueba ejecutando sp_Reset_Datos_Prueba
+  resetDatosPrueba(): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/productos/reset-pruebas`, {});
+  }
 }

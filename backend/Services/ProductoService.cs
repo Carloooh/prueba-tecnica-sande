@@ -15,6 +15,7 @@ public interface IProductoService
         List<string>? situaciones);
     Task<List<ProductoPrincipalDto>> BuscarProductosPrincipalesAsync(string? q, int? excluirId, string? marca = null, string? categoria = null);
     Task<ResultadoUnificacionDto> UnificarProductosAsync(UnificarRequestDto request);
+    Task ResetDatosPruebaAsync();
 }
 
 public class ResultadoUnificacionDto
@@ -94,5 +95,10 @@ public class ProductoService : IProductoService
                 ? "Se unificó 1 producto correctamente."
                 : $"Se unificaron {procesados} productos correctamente."
         };
+    }
+
+    public async Task ResetDatosPruebaAsync()
+    {
+        await _repository.ResetDatosPruebaAsync();
     }
 }

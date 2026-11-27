@@ -16,6 +16,7 @@ public interface IProductoRepository
         List<string>? situaciones);
     Task<List<ProductoPrincipalDto>> BuscarProductosPrincipalesAsync(string? q, int? excluirId, string? marca = null, string? categoria = null);
     Task UnificarProductoAsync(int idProductoOrigen, int idEntidadOrigen, int idProductoDestino);
+    Task ResetDatosPruebaAsync();
 }
 
 public class ProductoRepository : IProductoRepository
@@ -326,6 +327,18 @@ public class ProductoRepository : IProductoRepository
         command.Parameters.AddWithValue("@id_producto_2", idProductoOrigen);
         command.Parameters.AddWithValue("@id_entidad_prov_2", idEntidadOrigen);
         command.Parameters.AddWithValue("@id_producto_1", idProductoDestino);
+
+        await command.ExecuteNonQueryAsync();
+    }
+
+    // Ejecuta el procedimiento almacenado sp_Reset_Datos_Prueba para reiniciar los datos de prueba
+    public async Task ResetDatosPruebaAsync()
+    {
+        using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        using var command = new SqlCommand("dbo.sp_Reset_Datos_Prueba", connection);
+        command.CommandType = CommandType.StoredProcedure;
 
         await command.ExecuteNonQueryAsync();
     }

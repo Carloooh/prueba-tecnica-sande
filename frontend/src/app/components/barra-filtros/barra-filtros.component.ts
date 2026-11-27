@@ -38,6 +38,7 @@ export class BarraFiltrosComponent implements OnInit {
   @Output() guardar = new EventEmitter<void>();
   @Output() exportar = new EventEmitter<void>();
   @Output() archivoImportado = new EventEmitter<File>();
+  @Output() reiniciar = new EventEmitter<void>();
 
   // Filtros de texto seleccionados
   marcaTexto = '';
@@ -155,6 +156,11 @@ export class BarraFiltrosComponent implements OnInit {
   // Emite la exportación a Excel
   ejecutarExportar() {
     this.exportar.emit();
+  }
+
+  // Emite el reinicio de datos de prueba (QA)
+  ejecutarReinicio() {
+    this.reiniciar.emit();
   }
 
   // Al seleccionar un archivo Excel para importar

@@ -73,4 +73,20 @@ public class ProductosController : ControllerBase
             return StatusCode(500, new { message = "Error al procesar la unificación.", error = ex.Message });
         }
     }
+
+    // POST /api/productos/reset-pruebas
+    // Utilidad QA/Demo: reinicia los datos de prueba mediante dbo.sp_Reset_Datos_Prueba
+    [HttpPost("reset-pruebas")]
+    public async Task<IActionResult> ResetDatosPrueba()
+    {
+        try
+        {
+            await _service.ResetDatosPruebaAsync();
+            return Ok(new { message = "Datos de prueba reiniciados correctamente." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error al reiniciar los datos de prueba.", error = ex.Message });
+        }
+    }
 }
