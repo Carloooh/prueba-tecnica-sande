@@ -16,7 +16,6 @@
 
   <div class="tabla-scroll">
     <table mat-table [dataSource]="dataSource" matSort class="tabla-datos">
-      
       <!-- 1. SECCIÓN (Ordenable) -->
       <ng-container matColumnDef="seccion">
         <th mat-header-cell *matHeaderCellDef mat-sort-header="seccion">SECCIÓN</th>
@@ -45,7 +44,9 @@
 
       <!-- 5. PRODUCTO (Ordenable) -->
       <ng-container matColumnDef="producto">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header="producto" class="th-producto">PRODUCTO</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="producto" class="th-producto">
+          PRODUCTO
+        </th>
         <td mat-cell *matCellDef="let row" class="td-producto" [title]="row.producto">
           {{ row.producto }}
         </td>
@@ -85,34 +86,42 @@
         <td mat-cell *matCellDef="let row">{{ row.marca }}</td>
       </ng-container>
 
-      <!-- 11. CÓDIGO N (Edición con Lupa y Autocompletado) -->
+      <!-- 11. CÓDIGO N (Edición compacta ~130px con Lupa centrada) -->
       <ng-container matColumnDef="codigoN">
         <th mat-header-cell *matHeaderCellDef class="th-codigo-n">CODIGO N</th>
         <td mat-cell *matCellDef="let row" class="td-codigo-n">
           <div class="codigo-n-container">
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="input-codigo-n">
-              <input 
-                matInput 
-                [(ngModel)]="row.codigoN" 
-                (input)="onCodigoNCambio(row); buscarDestinos(row)" 
+              <input
+                matInput
+                [(ngModel)]="row.codigoN"
+                (input)="onCodigoNCambio(row); buscarDestinos(row)"
                 (focus)="buscarDestinos(row)"
-                placeholder="Ej. RC506" 
-                [matAutocomplete]="autoN" 
+                placeholder="Ej. RC506"
+                [matAutocomplete]="autoN"
               />
               <button
-                mat-icon-button
-                matSuffix
                 type="button"
+                matSuffix
                 class="btn-lupa-celda"
                 (click)="buscarDestinos(row, '')"
                 matTooltip="Buscar códigos de {{ row.marca }} / {{ row.categoria }}"
               >
                 <mat-icon>search</mat-icon>
               </button>
-              <mat-autocomplete #autoN="matAutocomplete" (optionSelected)="seleccionarDestino(row, $event.option.value)">
+              <mat-autocomplete
+                #autoN="matAutocomplete"
+                [panelWidth]="'520px'"
+                class="panel-codigo-n"
+                (optionSelected)="seleccionarDestino(row, $event.option.value)"
+              >
                 @for (opcion of opcionesDestino; track opcion.idProducto) {
                   <mat-option [value]="opcion">
-                    <strong>{{ opcion.codigo }}</strong> - {{ opcion.producto }} ({{ opcion.proveedor }})
+                    <div class="opcion-codigo-n">
+                      <span class="opcion-codigo">{{ opcion.codigo }}</span>
+                      <span class="opcion-desc" [title]="opcion.producto">{{ opcion.producto }}</span>
+                      <span class="opcion-prov">({{ opcion.proveedor }})</span>
+                    </div>
                   </mat-option>
                 }
               </mat-autocomplete>
@@ -121,7 +130,7 @@
         </td>
       </ng-container>
 
-      <!-- 12. DESTINO VALIDADO (Columna contigua derecha según PDF Página 1) -->
+      <!-- 12. DESTINO VALIDADO (Columna fija no dinámica para evitar saltos) -->
       <ng-container matColumnDef="destinoValidado">
         <th mat-header-cell *matHeaderCellDef class="th-destino-validado">DESTINO VALIDADO</th>
         <td mat-cell *matCellDef="let row" class="td-destino-validado">
@@ -137,7 +146,7 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="columnasVisibles"></tr>
-      <tr mat-row *matRowDef="let row; columns: columnasVisibles;" class="fila-producto"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnasVisibles" class="fila-producto"></tr>
     </table>
 
     @if (!cargando && dataSource.data.length === 0) {
