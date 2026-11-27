@@ -85,9 +85,9 @@ cd backend
 # Restaurar dependencias
 dotnet restore
 
-# Configurar la cadena de conexion, se debe competar la dirección de Server, Id de usuario y su Password luego de cada Variable y el signo = en la cadena antes de ejecutar el comando con los datos que ya cuentan ustedes, se ocultan datos sensibles por seguridad y buena práctica
+# Configurar la cadena de conexion, se debe competar la dirección del Server, Database, Id de usuario y su Password luego de cada Variable y el signo = en la cadena antes de ejecutar el comando con los datos que ya cuentan ustedes, se ocultan datos sensibles por seguridad y buena práctica
 dotnet user-secrets init
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=,1433;Database=db82943;User Id=;Password=;Encrypt=True;TrustServerCertificate=True;"
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=,1433;Database=;User Id=;Password=;Encrypt=True;TrustServerCertificate=True;"
 
 # Ejecutar la API
 dotnet run
@@ -148,6 +148,8 @@ En palabras sencillas, lo que hace el procedimiento cuando le mandamos el produc
 ## Sobre el Desarrollo
 
 Se desarrolló el sistema con backend y frontend separados pero subidos en monorepo a GitHub. Para el backend se utilizó C# con arquitectura limpia de 4 capas y para el frontend se utilizó TypeScript con Angular y Angular Material. Para el desarrollo, me apoyé con documentación oficial de .NET y Angular, e IA para corrección de errores, automatizaciones, mejora en la robustez del código backend principalmente y para testing. En el frontend, me tomé la libertad de darle un estilo propio, pero siguiendo la estructura y componentes que solicitan. Por ejemplo, el buscador de la barra de filtros lo puse para filtrar en caso de que lso filtros no busquen automáticamente por algún fallo, y puse el buscador de código dentro de cada fila para que quede más cómodo de utilizar. Añadí la columna Destino Validado a modo de previsualizar que el código seleccionado sea el que corresponde.
+
+En el backend, por gusto personal, incluí Swagger para probar y documentar los endpoints de la API de forma más visual, amigable y fácil.
 
 El flujo del proyecto sería:
 
