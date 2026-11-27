@@ -48,13 +48,42 @@ git clone https://github.com/Carloooh/prueba-tecnica-sande.git
 cd prueba-tecnica-sande
 ```
 
-### 2. Requisitos Previos
+El proyecto se puede levantar de dos formas (ambas exponen los mismos puertos: Frontend en `http://localhost:4200` y Backend/Swagger en `http://localhost:5095`):
 
-- .NET SDK (v8.0 o superior)
+---
+
+### Opcion A: Con Docker (recomendada) si es que se encuentra instalado y configurado en el equipo
+
+Requisito: tener **Docker Desktop** (o Docker Engine + Docker Compose) en ejecucion.
+
+1. Crea el archivo `.env` en la raiz del proyecto a partir de `.env.example` y colocar la cadena de conexion en `DB_CONNECTION_STRING`:
+
+```bash
+cp .env.example .env
+```
+
+2. Construye y levanta ambos servicios:
+
+```bash
+docker compose up --build
+```
+
+- Aplicacion web: http://localhost:4200
+- API Base URL: http://localhost:5095/api
+- Swagger UI: http://localhost:5095/swagger
+- Para detener los contenedores: `docker compose down` (en segundo plano: `docker compose up -d --build`)
+
+---
+
+### Opcion B: En local sin Docker (en 2 terminales)
+
+#### Requisitos Previos (sin Docker)
+
+- .NET SDK (v8.0 o superior; proyecto compilado con .NET 11)
 - Node.js (v18.0 o superior)
 - pnpm (gestor de paquetes recomendado para el frontend)
 
-#### Instalar pnpm (segun sistema operativo):
+##### Instalar pnpm (solo un comando según la terminal y sistema operativo):
 
 ```bash
 # Opcion general (con Node.js y npm instalado):
@@ -73,9 +102,7 @@ curl -fsSL https://get.pnpm.io/install.sh | sh -
 brew install pnpm
 ```
 
----
-
-### 3. Levantar el Backend (.NET Web API)
+#### Terminal 1: Levantar el Backend (.NET Web API)
 
 Ejecuta los siguientes comandos dentro de la carpeta `backend`:
 
@@ -85,7 +112,7 @@ cd backend
 # Restaurar dependencias
 dotnet restore
 
-# Configurar la cadena de conexion, se debe competar la dirección del Server, Database, Id de usuario y su Password luego de cada Variable y el signo = en la cadena antes de ejecutar el comando con los datos que ya cuentan ustedes, se ocultan datos sensibles por seguridad y buena práctica
+# Configurar la cadena de conexion, se debe completar la dirección del Server, Database, Id de usuario y su Password luego de cada Variable y el signo = en la cadena antes de ejecutar el comando con los datos que ya cuentan ustedes, se ocultan datos sensibles por seguridad y buena práctica
 dotnet user-secrets init
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=,1433;Database=;User Id=;Password=;Encrypt=True;TrustServerCertificate=True;"
 
@@ -99,9 +126,7 @@ dotnet watch run
 - API Base URL: http://localhost:5095/api
 - Swagger UI: http://localhost:5095/swagger (o https://localhost:7103/swagger)
 
----
-
-### 4. Levantar el Frontend (Angular)
+#### Terminal 2: Levantar el Frontend (Angular)
 
 Ejecuta los siguientes comandos dentro de la carpeta `frontend`:
 
@@ -149,7 +174,7 @@ En palabras sencillas, lo que hace el procedimiento cuando le mandamos el produc
 
 Se desarrolló el sistema con backend y frontend separados pero subidos en monorepo a GitHub. Para el backend se utilizó C# con arquitectura limpia de 4 capas y para el frontend se utilizó TypeScript con Angular y Angular Material. Para el desarrollo, me apoyé con documentación oficial de .NET y Angular, e IA para corrección de errores, automatizaciones, mejora en la robustez del código backend principalmente y para testing. En el frontend, me tomé la libertad de darle un estilo propio, pero siguiendo la estructura y componentes que solicitan. Por ejemplo, el buscador de la barra de filtros lo puse para filtrar en caso de que lso filtros no busquen automáticamente por algún fallo, y puse el buscador de código dentro de cada fila para que quede más cómodo de utilizar. Añadí la columna Destino Validado a modo de previsualizar que el código seleccionado sea el que corresponde.
 
-En el backend, por gusto personal, incluí Swagger para probar y documentar los endpoints de la API de forma más visual, amigable y fácil.
+En el backend, por gusto personal, incluí Swagger para probar y documentar los endpoints de la API de forma más visual, amigable y fácil. También dejé configurados archivos de Docker para poder levantar el proyecto de forma más cómoda.
 
 El flujo del proyecto sería:
 
@@ -177,4 +202,3 @@ En el backend el flujo es:
 5. Mejoras de interfaz, por ej. que sea más responsiva y con colores no tan planos.
 6. En el campo Codigo N, poder buscar por nombre y no solo código para poder filtrar más e identificar más rápido el código correspondiente dentro de la categoría en el buscador.
 7. Opción que automáticamente identifique los productos que requieren ser unificados (con IA o algo) y previa autorización humana se hagan los cambios, para no tener que recurrir al excel
-8. Utilizar Docker para aislar el proyecto y mejorar tanto el despliegue como el manejo de entornos

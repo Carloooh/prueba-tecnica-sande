@@ -1,0 +1,22 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sande-backend
+    ports:
+      - "5095:5095"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: http://+:5095
+      ConnectionStrings__DefaultConnection: ${DB_CONNECTION_STRING:?Configura DB_CONNECTION_STRING en el archivo .env}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sande-frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend

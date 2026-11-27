@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.angular/
+tmp/
+out-tsc/
+coverage/
+.git/
+.gitignore
+Dockerfile
+.dockerignore
+.vscode/
+.env
+.env.*
+*.log
+npm-debug.log*
+pnpm-debug.log*
