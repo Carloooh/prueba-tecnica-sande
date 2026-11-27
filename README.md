@@ -146,7 +146,7 @@ ng serve
 
 ---
 
-### Pruebas Unitarias (Backend)
+## Testing (Pruebas Unitarias)
 
 El backend cuenta con pruebas unitarias en `tests/Sande.Api.Tests` (xUnit) que utilizan datos de prueba simulados en memoria (mocks/fakes), por lo que **no se conectan ni modifican la base de datos real**.
 
@@ -214,7 +214,6 @@ En el backend el flujo es:
 
 ## Mejoras a Futuro
 
-1. Añadir pruebas de integración automatizadas contra una base de datos aislada y pruebas E2E en frontend
 2. Implementar logs
 3. Restricción de acceso a la vista y backend mediante sesión de usuario, permisos y token
 4. Listar automáticamente los productos con distinto código y proveedor para listarse y que no tengan que buscarlos en la tabla manualmente para corregirlos
