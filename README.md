@@ -214,9 +214,9 @@ En el backend el flujo es:
 
 ## Mejoras a Futuro
 
-2. Implementar logs
-3. Restricción de acceso a la vista y backend mediante sesión de usuario, permisos y token
-4. Listar automáticamente los productos con distinto código y proveedor para listarse y que no tengan que buscarlos en la tabla manualmente para corregirlos
-5. Mejoras de interfaz, por ej. paginación para cuando sean muchos resultados y no haya que hacer scroll infinitamente en la tabla, que sea más responsiva y con colores no tan planos.
-6. En el campo Codigo N, poder buscar por nombre y no solo código para poder filtrar más e identificar más rápido el código correspondiente dentro de la categoría en el buscador.
-7. Opción que automáticamente identifique los productos que requieren ser unificados (con IA o algo) y previa autorización humana se hagan los cambios, para no tener que recurrir al excel
+1. Implementar logs
+2. Restricción de acceso a la vista y backend mediante sesión de usuario, permisos y token
+3. Listar automáticamente los productos con distinto código y proveedor para listarse y que no tengan que buscarlos en la tabla manualmente para corregirlos
+4. Mejoras de interfaz, por ej. paginación para cuando sean muchos resultados y no haya que hacer scroll infinitamente en la tabla, que sea más responsiva y con colores no tan planos.
+5. En el campo Codigo N, poder buscar por nombre y no solo código para poder filtrar más e identificar más rápido el código correspondiente dentro de la categoría en el buscador.
+6. Opción que automáticamente identifique los productos que requieren ser unificados (con IA o algo) y previa autorización humana se hagan los cambios, para no tener que recurrir al excel
