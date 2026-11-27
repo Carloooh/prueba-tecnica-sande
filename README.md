@@ -85,9 +85,9 @@ cd backend
 # Restaurar dependencias
 dotnet restore
 
-# Configurar la cadena de conexion
+# Configurar la cadena de conexion, se debe competar la dirección de Server, Id de usuario y su Password luego de cada Variable y el signo = en la cadena antes de ejecutar el comando con los datos que ya cuentan ustedes, se ocultan datos sensibles por seguridad y buena práctica
 dotnet user-secrets init
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=db82943.public.databaseasp.net,1433;Database=db82943;User Id=db82943;Password=Sande1771;Encrypt=True;TrustServerCertificate=True;"
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=,1433;Database=db82943;User Id=;Password=;Encrypt=True;TrustServerCertificate=True;"
 
 # Ejecutar la API
 dotnet run
@@ -123,18 +123,18 @@ ng serve
 
 ## Procedimientos Almacenados y Base de Datos
 
-Se creó un procedimiento almacenado para asegurar la ejecución atómica y eficiente de las 4 operaciones de unificación y traspaso de stock,
+Para resolver la unificación creé el procedimiento almacenado `[dbo].[sp_Unificar_Producto]`. La idea principal fue no hacer múltiples consultas sueltas desde el backend ni arriesgarse a dejar datos a medias si algo fallaba entre medio, así que dejé las 4 operaciones obligatorias del negocio encapsuladas dentro de una sola transacción atómica.
+
+En palabras sencillas, lo que hace el procedimiento cuando le mandamos el producto origen (el secundario) y el destino (el principal) es:
+
+1. **Oculta el código duplicado:** Lo registra en `dbo.TFC_Productos_Agrupados_RGB` como hijo del producto principal. Al hacer esto, la vista maestro de Sande lo filtra y desaparece de la grilla de inmediato.
+2. **Reordena agrupaciones previas:** Lo guarda en `dbo.TFC_Productos_Agrupados_Finales_RGB` y, en caso de que este código secundario ya tuviera otros códigos agrupados bajo su mando en el pasado, se los reasigna directamente al nuevo producto principal para que no quede ningún registro huérfano.
+3. **Ajusta las prioridades del proveedor:** En `dbo.tfc_productos_rgb` busca al proveedor secundario (por ejemplo `D-OTERO D`), le homologa el código para que use el del principal y le cambia de forma automática la prioridad a 2, dejándolo oficialmente como proveedor alternativo del producto principal.
+4. **Traspasa todo el stock:** Revisa si el código secundario tiene existencias en cualquiera de las 4 bodegas (`stocke`, `stockt2`, `stockt7`, `stockl3`), se las suma una a una a las bodegas del producto principal (creando el registro si el principal aún no tenía fila de stock) y deja en 0 las existencias del código absorbido.
 
 - **Script:** `backend/Scripts/SP_Unificar_Producto.sql`
 - **Procedimiento:** `[dbo].[sp_Unificar_Producto]`
-- **Parametros:** `@id_producto_2` (origen), `@id_entidad_prov_2` (proveedor origen), `@id_producto_1` (destino principal).
-
-### Pasos ejecutados por el SP dentro de una transacción atómica:
-
-1. Inserta en `dbo.TFC_Productos_Agrupados_RGB` para ocultar inmediatamente el duplicado de la vista maestro.
-2. Inserta/actualiza en `dbo.TFC_Productos_Agrupados_Finales_RGB` y reasigna los productos que tenian al duplicado como madre.
-3. Actualiza `dbo.tfc_productos_rgb` reasignando el codigo del principal y cambiando prioridad a 2.
-4. Traspasa el stock bodega por bodega (`stocke`, `stockt2`, `stockt7`, `stockl3`) a `dbo.tfc_vista_maestro_productos_stock` y deja en 0 el producto absorbido.
+- **Parámetros:** `@id_producto_2` (origen), `@id_entidad_prov_2` (proveedor origen), `@id_producto_1` (destino principal).
 
 > **Reinicio de datos para pruebas:**
 > En caso de querer reiniciar los datos de prueba en la base de datos a su estado original, ejecutar en la base de datos:
